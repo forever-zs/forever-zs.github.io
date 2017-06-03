@@ -90,13 +90,19 @@
 
 
 
+<meta name="description" content="##namenode元数据管理机制 [TOC] 客户端下载hdfs中文件的过程 客户端首先向namenode发送下载请求，然后nodenode返回请求文件的元信息给客户端（元数据包括文件切片后的每一块放在哪一个服务器上的信息） 客户端通过返回的元数据请求对应的databode，通过建立NIO连接管道传输数据。（如果文件被切分为多个切片则会分别请求三个datanode，然后在客户端合并。）   na">
 <meta property="og:type" content="article">
 <meta property="og:title" content="帅到没朋友">
-<meta property="og:url" content="http://yoursite.com/2017/05/30/Lucen入门/index.html">
+<meta property="og:url" content="http://yoursite.com/2017/06/03/hadoop/namenode管理元数据机制/index.html">
 <meta property="og:site_name" content="帅到没朋友">
-<meta property="og:updated_time" content="2017-05-28T06:04:59.000Z">
+<meta property="og:description" content="##namenode元数据管理机制 [TOC] 客户端下载hdfs中文件的过程 客户端首先向namenode发送下载请求，然后nodenode返回请求文件的元信息给客户端（元数据包括文件切片后的每一块放在哪一个服务器上的信息） 客户端通过返回的元数据请求对应的databode，通过建立NIO连接管道传输数据。（如果文件被切分为多个切片则会分别请求三个datanode，然后在客户端合并。）   na">
+<meta property="og:image" content="http://img.blog.csdn.net/20170527143744557?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="http://img.blog.csdn.net/20170527150531492?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:updated_time" content="2017-05-27T07:05:41.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="帅到没朋友">
+<meta name="twitter:description" content="##namenode元数据管理机制 [TOC] 客户端下载hdfs中文件的过程 客户端首先向namenode发送下载请求，然后nodenode返回请求文件的元信息给客户端（元数据包括文件切片后的每一块放在哪一个服务器上的信息） 客户端通过返回的元数据请求对应的databode，通过建立NIO连接管道传输数据。（如果文件被切分为多个切片则会分别请求三个datanode，然后在客户端合并。）   na">
+<meta name="twitter:image" content="http://img.blog.csdn.net/20170527143744557?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
 
 
 
@@ -124,7 +130,7 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2017/05/30/Lucen入门/"/>
+  <link rel="canonical" href="http://yoursite.com/2017/06/03/hadoop/namenode管理元数据机制/"/>
 
 
 
@@ -250,7 +256,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/30/Lucen入门/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/03/hadoop/namenode管理元数据机制/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="forever_zs">
@@ -279,8 +285,8 @@
               
                 <span class="post-meta-item-text">Veröffentlicht am</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-05-30T13:12:37+08:00">
-                2017-05-30
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-06-03T11:59:19+08:00">
+                2017-06-03
               </time>
             
 
@@ -314,7 +320,24 @@
       
 
       
-        
+        <p>##namenode元数据管理机制</p>
+<p>[TOC]</p>
+<h4 id="客户端下载hdfs中文件的过程"><a href="#客户端下载hdfs中文件的过程" class="headerlink" title="客户端下载hdfs中文件的过程"></a>客户端下载hdfs中文件的过程</h4><ol>
+<li>客户端首先向namenode发送下载请求，然后nodenode返回请求文件的元信息给客户端（<strong>元数据包括文件切片后的每一块放在哪一个服务器上的信息</strong>）</li>
+<li>客户端通过返回的元数据请求对应的databode，通过建立NIO连接管道传输数据。（如果文件被切分为多个切片则会分别请求三个datanode，<strong>然后在客户端合并</strong>。）</li>
+</ol>
+<p><img src="http://img.blog.csdn.net/20170527143744557?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<h4 id="namenode管理元数据的机制"><a href="#namenode管理元数据的机制" class="headerlink" title="namenode管理元数据的机制"></a>namenode管理元数据的机制</h4><ol>
+<li><p>当元数据更新之后，首先在namenode的内存中更新，然后进行追加日志的操作。（<strong>日志记录了对文件的具体操作信息</strong>）。</p>
+</li>
+<li><p>每隔一段时间，通过Secondary NameNode每隔一段时间向namenode请求是否需要做需要做日志归档。如果需要，则namenode会滚动日志文件（创建新的文件继续写日志），已经写入的日志文件会被Secondary NameNode下载并写为镜像文件。</p>
+</li>
+<li><p>每一个block占元数据150byte，不管文件大小都会占用这么多，所以hdfs不适合存储大量小文件。</p>
+<p><img src="http://img.blog.csdn.net/20170527150531492?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>​</p>
+</li>
+</ol>
+
       
     </div>
 
@@ -356,7 +379,7 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2017/05/30/redis入门/" rel="prev" title="">
+              <a href="/2017/06/03/hadoop/MapReduce基础/" rel="prev" title="">
                  <i class="fa fa-chevron-right"></i>
               </a>
             
@@ -405,8 +428,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            Inhaltsverzeichnis
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Übersicht
+          </li>
+        </ul>
+      
 
-      <section class="site-overview sidebar-panel sidebar-panel-active">
+      <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
                src="/images/avatar.gif"
@@ -421,7 +453,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-count">8</span>
                 <span class="site-state-item-name">Artikel</span>
               </a>
             </div>
@@ -450,6 +482,22 @@
 
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#客户端下载hdfs中文件的过程"><span class="nav-number">1.</span> <span class="nav-text">客户端下载hdfs中文件的过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#namenode管理元数据的机制"><span class="nav-number">2.</span> <span class="nav-text">namenode管理元数据的机制</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       

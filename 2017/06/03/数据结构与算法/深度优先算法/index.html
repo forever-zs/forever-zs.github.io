@@ -90,19 +90,18 @@
 
 
 
-<meta name="description" content="##namenode元数据管理机制 [TOC] 客户端下载hdfs中文件的过程 客户端首先向namenode发送下载请求，然后nodenode返回请求文件的元信息给客户端（元数据包括文件切片后的每一块放在哪一个服务器上的信息） 客户端通过返回的元数据请求对应的databode，通过建立NIO连接管道传输数据。（如果文件被切分为多个切片则会分别请求三个datanode，然后在客户端合并。）   na">
+<meta name="description" content="深度优先算法 基本思想 从一个顶点V0开始，沿着一条路一直走到底，如果发现不能到达目标解，那就返回到上一个节点，然后从另一条路开始走到底，这种尽量往深处走的概念即是深度优先的概念。  为了实现深度优先搜索，首先选择一个起始顶点并需要遵守三个规则：  如果可能，访问一个邻接的未访问顶点，标记它，并把它放入栈中。 当不能执行规则1时，如果栈不空，就从栈中弹出一个顶点。 如果不能执行规则1和规则2，就完">
 <meta property="og:type" content="article">
 <meta property="og:title" content="帅到没朋友">
-<meta property="og:url" content="http://yoursite.com/2017/05/30/namenode管理元数据机制/index.html">
+<meta property="og:url" content="http://yoursite.com/2017/06/03/数据结构与算法/深度优先算法/index.html">
 <meta property="og:site_name" content="帅到没朋友">
-<meta property="og:description" content="##namenode元数据管理机制 [TOC] 客户端下载hdfs中文件的过程 客户端首先向namenode发送下载请求，然后nodenode返回请求文件的元信息给客户端（元数据包括文件切片后的每一块放在哪一个服务器上的信息） 客户端通过返回的元数据请求对应的databode，通过建立NIO连接管道传输数据。（如果文件被切分为多个切片则会分别请求三个datanode，然后在客户端合并。）   na">
-<meta property="og:image" content="http://img.blog.csdn.net/20170527143744557?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
-<meta property="og:image" content="http://img.blog.csdn.net/20170527150531492?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
-<meta property="og:updated_time" content="2017-05-27T07:05:41.000Z">
+<meta property="og:description" content="深度优先算法 基本思想 从一个顶点V0开始，沿着一条路一直走到底，如果发现不能到达目标解，那就返回到上一个节点，然后从另一条路开始走到底，这种尽量往深处走的概念即是深度优先的概念。  为了实现深度优先搜索，首先选择一个起始顶点并需要遵守三个规则：  如果可能，访问一个邻接的未访问顶点，标记它，并把它放入栈中。 当不能执行规则1时，如果栈不空，就从栈中弹出一个顶点。 如果不能执行规则1和规则2，就完">
+<meta property="og:image" content="http://p.blog.csdn.net/images/p_blog_csdn_net/andyelvis/325322/o_%e6%b7%b1%e5%ba%a6%e6%90%9c%e7%b4%a2.BMP">
+<meta property="og:updated_time" content="2017-05-03T07:08:00.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="帅到没朋友">
-<meta name="twitter:description" content="##namenode元数据管理机制 [TOC] 客户端下载hdfs中文件的过程 客户端首先向namenode发送下载请求，然后nodenode返回请求文件的元信息给客户端（元数据包括文件切片后的每一块放在哪一个服务器上的信息） 客户端通过返回的元数据请求对应的databode，通过建立NIO连接管道传输数据。（如果文件被切分为多个切片则会分别请求三个datanode，然后在客户端合并。）   na">
-<meta name="twitter:image" content="http://img.blog.csdn.net/20170527143744557?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta name="twitter:description" content="深度优先算法 基本思想 从一个顶点V0开始，沿着一条路一直走到底，如果发现不能到达目标解，那就返回到上一个节点，然后从另一条路开始走到底，这种尽量往深处走的概念即是深度优先的概念。  为了实现深度优先搜索，首先选择一个起始顶点并需要遵守三个规则：  如果可能，访问一个邻接的未访问顶点，标记它，并把它放入栈中。 当不能执行规则1时，如果栈不空，就从栈中弹出一个顶点。 如果不能执行规则1和规则2，就完">
+<meta name="twitter:image" content="http://p.blog.csdn.net/images/p_blog_csdn_net/andyelvis/325322/o_%e6%b7%b1%e5%ba%a6%e6%90%9c%e7%b4%a2.BMP">
 
 
 
@@ -130,7 +129,7 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2017/05/30/namenode管理元数据机制/"/>
+  <link rel="canonical" href="http://yoursite.com/2017/06/03/数据结构与算法/深度优先算法/"/>
 
 
 
@@ -256,7 +255,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/30/namenode管理元数据机制/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/03/数据结构与算法/深度优先算法/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="forever_zs">
@@ -285,8 +284,8 @@
               
                 <span class="post-meta-item-text">Veröffentlicht am</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-05-30T13:13:05+08:00">
-                2017-05-30
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-06-03T12:02:11+08:00">
+                2017-06-03
               </time>
             
 
@@ -320,23 +319,28 @@
       
 
       
-        <p>##namenode元数据管理机制</p>
-<p>[TOC]</p>
-<h4 id="客户端下载hdfs中文件的过程"><a href="#客户端下载hdfs中文件的过程" class="headerlink" title="客户端下载hdfs中文件的过程"></a>客户端下载hdfs中文件的过程</h4><ol>
-<li>客户端首先向namenode发送下载请求，然后nodenode返回请求文件的元信息给客户端（<strong>元数据包括文件切片后的每一块放在哪一个服务器上的信息</strong>）</li>
-<li>客户端通过返回的元数据请求对应的databode，通过建立NIO连接管道传输数据。（如果文件被切分为多个切片则会分别请求三个datanode，<strong>然后在客户端合并</strong>。）</li>
+        <h1 id="深度优先算法"><a href="#深度优先算法" class="headerlink" title="深度优先算法"></a>深度优先算法</h1><ul>
+<li><p>基本思想</p>
+<p>从一个顶点V0开始，沿着一条路一直走到底，如果发现不能到达目标解，那就返回到上一个节点，然后从另一条路开始走到底，这种尽量往深处走的概念即是深度优先的概念。</p>
+<p><img src="http://p.blog.csdn.net/images/p_blog_csdn_net/andyelvis/325322/o_%e6%b7%b1%e5%ba%a6%e6%90%9c%e7%b4%a2.BMP" alt="img"></p>
+<p>为了实现深度优先搜索，首先选择一个起始顶点并需要遵守三个规则：</p>
+<ol>
+<li>如果可能，访问一个邻接的未访问顶点，标记它，并把它放入栈中。</li>
+<li>当不能执行规则1时，如果栈不空，就从栈中弹出一个顶点。</li>
+<li>如果不能执行规则1和规则2，就完成了整个搜索过程。</li>
 </ol>
-<p><img src="http://img.blog.csdn.net/20170527143744557?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
-<h4 id="namenode管理元数据的机制"><a href="#namenode管理元数据的机制" class="headerlink" title="namenode管理元数据的机制"></a>namenode管理元数据的机制</h4><ol>
-<li><p>当元数据更新之后，首先在namenode的内存中更新，然后进行追加日志的操作。（<strong>日志记录了对文件的具体操作信息</strong>）。</p>
 </li>
-<li><p>每隔一段时间，通过Secondary NameNode每隔一段时间向namenode请求是否需要做需要做日志归档。如果需要，则namenode会滚动日志文件（创建新的文件继续写日志），已经写入的日志文件会被Secondary NameNode下载并写为镜像文件。</p>
+<li><p>基本模型（参考《啊哈算法》，通过递归完成）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">dfs</span><span class="params">(<span class="keyword">int</span> step)</span></span>&#123;</div><div class="line">  </div><div class="line">  	判断边界</div><div class="line">      尝试每一种可能 <span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;n;i++)&#123;</div><div class="line">        继续下一步</div><div class="line">        dfs(step+<span class="number">1</span>);</div><div class="line">      &#125;</div><div class="line">  	返回</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>算法关键在于解决“当前该怎么做”，以后的步骤应该和当前一致，通常通过for循环遍历将每种可能都尝试一遍，解决这一步之后变递归进入下一步。</p>
 </li>
-<li><p>每一个block占元数据150byte，不管文件大小都会占用这么多，所以hdfs不适合存储大量小文件。</p>
-<p><img src="http://img.blog.csdn.net/20170527150531492?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<li><p>简单栗子（实现多个数的全排列）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Dfs</span> </span>&#123;</div><div class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> nums[]=&#123;<span class="number">5</span>,<span class="number">7</span>,<span class="number">9</span>,<span class="number">2</span>&#125;;</div><div class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> box[]=&#123;<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>&#125;;</div><div class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> book[]=&#123;<span class="keyword">true</span>,<span class="keyword">true</span>,<span class="keyword">true</span>,<span class="keyword">true</span>&#125;;</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">		 dfs(<span class="number">0</span>);</div><div class="line">	&#125;</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">dfs</span><span class="params">(<span class="keyword">int</span> step)</span></span>&#123;</div><div class="line">      <span class="comment">//当达到边界条件后返回</span></div><div class="line">		<span class="keyword">if</span>(step&gt;=box.length)&#123;</div><div class="line">			<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;box.length;i++)&#123;</div><div class="line">				System.out.print(box[i]+<span class="string">"\t"</span>);</div><div class="line">			&#125;</div><div class="line">			System.out.println();</div><div class="line">			<span class="keyword">return</span> ;</div><div class="line">		&#125;</div><div class="line">      <span class="comment">//循环当前的所有可能</span></div><div class="line">		<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;nums.length;i++)&#123;</div><div class="line">			<span class="keyword">if</span>(book[i])&#123;</div><div class="line">				box[step]=nums[i];</div><div class="line">				book[i]=<span class="keyword">false</span>;</div><div class="line">				dfs(step+<span class="number">1</span>);</div><div class="line">				book[i]=<span class="keyword">true</span>;</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>上面代码中的nums代表需要被排列的数字集合，box代表用来放数字的容器。（相当于将四个数字分别放在四个盒子中共有多少种情况。），book用来标记nums数组中的已经被放入盒子中的数字。</p>
+<p>​</p>
 <p>​</p>
 </li>
-</ol>
+</ul>
 
       
     </div>
@@ -373,7 +377,7 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/05/30/redis入门/" rel="next" title="">
+              <a href="/2017/06/03/数据结构与算法/广度优先算法/" rel="next" title="">
                 <i class="fa fa-chevron-left"></i> 
               </a>
             
@@ -382,10 +386,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2017/05/30/MapReduce基础/" rel="prev" title="">
-                 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -457,7 +457,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-count">8</span>
                 <span class="site-state-item-name">Artikel</span>
               </a>
             </div>
@@ -496,7 +496,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#客户端下载hdfs中文件的过程"><span class="nav-number">1.</span> <span class="nav-text">客户端下载hdfs中文件的过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#namenode管理元数据的机制"><span class="nav-number">2.</span> <span class="nav-text">namenode管理元数据的机制</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#深度优先算法"><span class="nav-number">1.</span> <span class="nav-text">深度优先算法</span></a></li></ol></div>
             
 
           </div>

@@ -1,0 +1,708 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.1" />
+
+
+
+
+
+
+<meta name="description" content="Docker入门[TOC] Docker安装​    建议在ubuntu系统中安装docker学习。（docker在Ubuntu中开发完成的） 12345sudo apt-get updatesudo apt-get docker.io  #安装docker，这样安装安装的不是最新版docker version  #查看docker的版本sudo service docker start  #启动">
+<meta property="og:type" content="article">
+<meta property="og:title" content="帅到没朋友">
+<meta property="og:url" content="http://yoursite.com/2017/06/03/docker/docker入门/index.html">
+<meta property="og:site_name" content="帅到没朋友">
+<meta property="og:description" content="Docker入门[TOC] Docker安装​    建议在ubuntu系统中安装docker学习。（docker在Ubuntu中开发完成的） 12345sudo apt-get updatesudo apt-get docker.io  #安装docker，这样安装安装的不是最新版docker version  #查看docker的版本sudo service docker start  #启动">
+<meta property="og:updated_time" content="2017-05-23T13:50:08.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="帅到没朋友">
+<meta name="twitter:description" content="Docker入门[TOC] Docker安装​    建议在ubuntu系统中安装docker学习。（docker在Ubuntu中开发完成的） 12345sudo apt-get updatesudo apt-get docker.io  #安装docker，这样安装安装的不是最新版docker version  #查看docker的版本sudo service docker start  #启动">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/06/03/docker/docker入门/"/>
+
+
+
+
+
+  <title> | 帅到没朋友</title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">帅到没朋友</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Startseite
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archiv
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/03/docker/docker入门/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="帅到没朋友">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline"></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-06-03T12:00:15+08:00">
+                2017-06-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Docker入门"><a href="#Docker入门" class="headerlink" title="Docker入门"></a>Docker入门</h2><p>[TOC]</p>
+<h4 id="Docker安装"><a href="#Docker安装" class="headerlink" title="Docker安装"></a>Docker安装</h4><p>​    建议在ubuntu系统中安装docker学习。（docker在Ubuntu中开发完成的）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">sudo apt-get update</div><div class="line"></div><div class="line">sudo apt-get docker.io  #安装docker，这样安装安装的不是最新版</div><div class="line">docker version  #查看docker的版本</div><div class="line">sudo service docker start  #启动doker服务</div></pre></td></tr></table></figure>
+<h4 id="Docker简介"><a href="#Docker简介" class="headerlink" title="Docker简介"></a>Docker简介</h4><p>​    Docker是一个装应用的容器，每个容器中运行着一个或多个应用，不同的容器之间相互隔离，而且容器之间是可以相互通信的。</p>
+<p>​    Doker容器除了运行其中的应用之外，基本不消耗额外的系统资源保证应用性能的同时，尽量减少系统的开销。最厉害的是，即使其中某个崩溃了，其他应用也不会受到影响可以正常运行。</p>
+<h4 id="Docker的核心概念"><a href="#Docker的核心概念" class="headerlink" title="Docker的核心概念"></a>Docker的核心概念</h4><ol>
+<li><p>镜像</p>
+<p>Docker镜像类似与虚拟机的镜像，一个镜像可以包含一个完整的操作系统，里面包含了我们应用以及必须的运行环境。镜像是docker的基础，它是一个只读的模版，我们可以直接下载很多镜像作为我们的模版。</p>
+</li>
+<li><p>容器</p>
+<p>Docker 容器和文件夹很类似，一个Docker容器包含了所有的某个应用运行所需要的环境。每一个 Docker 容器都是从 Docker 镜像创建的。Docker 容器可以运行、开始、停止、移动和删除。每一个 Docker 容器都是独立和安全的应用平台，Docker 容器是 Docker 的运行部分。</p>
+</li>
+<li><p>仓库</p>
+<p>Docker仓库类似于代码仓库，是Docker集中存放镜像文件的地方。通过不同的仓库，我们可以直接下载到很多现成的镜像。</p>
+</li>
+</ol>
+<h4 id="通过Docker安装Nginx容器"><a href="#通过Docker安装Nginx容器" class="headerlink" title="通过Docker安装Nginx容器"></a>通过Docker安装Nginx容器</h4><p>​    通过安装nginx的栗子熟悉如何docker的基本使用，下载需要的镜像直接登陆网易蜂巢：<a href="https://c.163.com/hub#/m/home/：" target="_blank" rel="external">https://c.163.com/hub#/m/home/：</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">service docker start  #开启docker服务</div><div class="line">docker pull hub.c.163.com/library/nginx:latest  #下载nginx镜像</div><div class="line"></div><div class="line">docker run -d hub.c.163.com/library/nginx  #以后台进程运行容器</div><div class="line"></div><div class="line">docker ps   #查看当前的容器进程，其中的CONTAINER ID我们操作容器时会用到</div><div class="line"></div><div class="line">docker exec -it CONTAINER ID bash  #运行容器中的命令，这里是启动linux的终端，因为nginx是运行在linux系统中，所以相当于进入了另一个linux系统，从容器中退出使用exit</div><div class="line"></div><div class="line">docker stop CONTAINER ID #停止容器</div><div class="line"></div><div class="line">docker restart CONTAINER ID #重启容器</div></pre></td></tr></table></figure>
+<ul>
+<li><p>Docker的网络映射</p>
+<p>上面我们安装了nginx容器，但是我们在外界如何访问到容器呢？这时我们可以通过网络映射完成，将主机的任意端口映射到容器的任意端口：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">docker run -d -p 8082:80 hub.c.163.com/library/nginx  #将主机的8082端口映射到80端口</div><div class="line"></div><div class="line">docker run -d -P hub.c.163.com/library/nginx  #将主机的随机端口都映射到所有容器端口</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="通过Docker构建JavaWeb项目的镜像"><a href="#通过Docker构建JavaWeb项目的镜像" class="headerlink" title="通过Docker构建JavaWeb项目的镜像"></a>通过Docker构建JavaWeb项目的镜像</h4><ol>
+<li><p>下载Tomcat的镜像</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker pull hub.c.163.com/library/tomcat:latest  #下载Tomcat的镜像，包含jdk</div></pre></td></tr></table></figure>
+</li>
+<li><p>下载MySql的镜像</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker pull hub.c.163.com/library/mysql:latest</div></pre></td></tr></table></figure>
+<p>运行mysql，并创建jpress数据库。密码为root</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker run -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=jpress hub.c.163.com/library/mysql:latest</div></pre></td></tr></table></figure>
+<p>​</p>
+</li>
+<li><p>通过DockFile文件创建镜像</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">vim DockerFile  #新建文件</div></pre></td></tr></table></figure>
+<p>编辑dockFile镜像</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">from hub.c.163.com/library/tomcat:latest  #将tomcat作为基础镜像</div><div class="line">MAINTAINMA 	forever shuaizhao_forever@163.com  #作者信息</div><div class="line">COPY jpress.war /usr/local/tomcat/webapps  #将我们的web项目拷贝到tomcat的webapps目录下</div></pre></td></tr></table></figure>
+</li>
+<li><p>通过DockerFile生成镜像</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker build -t jpress:lastest .   #编译当前目录下的DockerFile,命名为jpress,tag为lastest</div></pre></td></tr></table></figure>
+</li>
+<li><p>运行自定义的容器</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker run -d -p 8088:8080 jpress</div></pre></td></tr></table></figure>
+<p>​</p>
+</li>
+</ol>
+<p>​    </p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/06/03/hadoop/MapReduce基础/" rel="next" title="">
+                <i class="fa fa-chevron-left"></i> 
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/06/03/数据结构与算法/求解最大子数组/" rel="prev" title="">
+                 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            Inhaltsverzeichnis
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            Übersicht
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="forever_zs" />
+          <p class="site-author-name" itemprop="name">forever_zs</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">8</span>
+                <span class="site-state-item-name">Artikel</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Docker入门"><span class="nav-number">1.</span> <span class="nav-text">Docker入门</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Docker安装"><span class="nav-number">1.0.1.</span> <span class="nav-text">Docker安装</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Docker简介"><span class="nav-number">1.0.2.</span> <span class="nav-text">Docker简介</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Docker的核心概念"><span class="nav-number">1.0.3.</span> <span class="nav-text">Docker的核心概念</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#通过Docker安装Nginx容器"><span class="nav-number">1.0.4.</span> <span class="nav-text">通过Docker安装Nginx容器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#通过Docker构建JavaWeb项目的镜像"><span class="nav-number">1.0.5.</span> <span class="nav-text">通过Docker构建JavaWeb项目的镜像</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">forever_zs</span>
+</div>
+
+
+<div class="powered-by">
+  Erstellt mit  <a class="theme-link" href="https://hexo.io">Hexo</a>
+</div>
+
+<div class="theme-info">
+  Theme -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.1"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

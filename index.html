@@ -251,7 +251,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/30/MapReduce基础/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/03/数据结构与算法/深度优先算法/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="forever_zs">
@@ -270,7 +270,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2017/05/30/MapReduce基础/" itemprop="url">Unbenannt</a></h1>
+                <a class="post-title-link" href="/2017/06/03/数据结构与算法/深度优先算法/" itemprop="url">Unbenannt</a></h1>
         
 
         <div class="post-meta">
@@ -282,8 +282,902 @@
               
                 <span class="post-meta-item-text">Veröffentlicht am</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-05-30T13:13:08+08:00">
-                2017-05-30
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-06-03T12:02:11+08:00">
+                2017-06-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="深度优先算法"><a href="#深度优先算法" class="headerlink" title="深度优先算法"></a>深度优先算法</h1><ul>
+<li><p>基本思想</p>
+<p>从一个顶点V0开始，沿着一条路一直走到底，如果发现不能到达目标解，那就返回到上一个节点，然后从另一条路开始走到底，这种尽量往深处走的概念即是深度优先的概念。</p>
+<p><img src="http://p.blog.csdn.net/images/p_blog_csdn_net/andyelvis/325322/o_%e6%b7%b1%e5%ba%a6%e6%90%9c%e7%b4%a2.BMP" alt="img"></p>
+<p>为了实现深度优先搜索，首先选择一个起始顶点并需要遵守三个规则：</p>
+<ol>
+<li>如果可能，访问一个邻接的未访问顶点，标记它，并把它放入栈中。</li>
+<li>当不能执行规则1时，如果栈不空，就从栈中弹出一个顶点。</li>
+<li>如果不能执行规则1和规则2，就完成了整个搜索过程。</li>
+</ol>
+</li>
+<li><p>基本模型（参考《啊哈算法》，通过递归完成）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">dfs</span><span class="params">(<span class="keyword">int</span> step)</span></span>&#123;</div><div class="line">  </div><div class="line">  	判断边界</div><div class="line">      尝试每一种可能 <span class="keyword">for</span>(i=<span class="number">0</span>;i&lt;n;i++)&#123;</div><div class="line">        继续下一步</div><div class="line">        dfs(step+<span class="number">1</span>);</div><div class="line">      &#125;</div><div class="line">  	返回</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>算法关键在于解决“当前该怎么做”，以后的步骤应该和当前一致，通常通过for循环遍历将每种可能都尝试一遍，解决这一步之后变递归进入下一步。</p>
+</li>
+<li><p>简单栗子（实现多个数的全排列）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Dfs</span> </span>&#123;</div><div class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> nums[]=&#123;<span class="number">5</span>,<span class="number">7</span>,<span class="number">9</span>,<span class="number">2</span>&#125;;</div><div class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> box[]=&#123;<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>&#125;;</div><div class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> book[]=&#123;<span class="keyword">true</span>,<span class="keyword">true</span>,<span class="keyword">true</span>,<span class="keyword">true</span>&#125;;</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">		 dfs(<span class="number">0</span>);</div><div class="line">	&#125;</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">dfs</span><span class="params">(<span class="keyword">int</span> step)</span></span>&#123;</div><div class="line">      <span class="comment">//当达到边界条件后返回</span></div><div class="line">		<span class="keyword">if</span>(step&gt;=box.length)&#123;</div><div class="line">			<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;box.length;i++)&#123;</div><div class="line">				System.out.print(box[i]+<span class="string">"\t"</span>);</div><div class="line">			&#125;</div><div class="line">			System.out.println();</div><div class="line">			<span class="keyword">return</span> ;</div><div class="line">		&#125;</div><div class="line">      <span class="comment">//循环当前的所有可能</span></div><div class="line">		<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;nums.length;i++)&#123;</div><div class="line">			<span class="keyword">if</span>(book[i])&#123;</div><div class="line">				box[step]=nums[i];</div><div class="line">				book[i]=<span class="keyword">false</span>;</div><div class="line">				dfs(step+<span class="number">1</span>);</div><div class="line">				book[i]=<span class="keyword">true</span>;</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>上面代码中的nums代表需要被排列的数字集合，box代表用来放数字的容器。（相当于将四个数字分别放在四个盒子中共有多少种情况。），book用来标记nums数组中的已经被放入盒子中的数字。</p>
+<p>​</p>
+<p>​</p>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/03/数据结构与算法/广度优先算法/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="帅到没朋友">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/06/03/数据结构与算法/广度优先算法/" itemprop="url">Unbenannt</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-06-03T12:02:11+08:00">
+                2017-06-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="广度优先算法"><a href="#广度优先算法" class="headerlink" title="广度优先算法"></a>广度优先算法</h1><ul>
+<li><p>基本思想</p>
+<p>它的思想是从一个顶点V0开始，辐射状地优先遍历其周围较广的区域。搜索过程：先访问节点v；再依次访问与v相邻的节点；访问这些节点之后，再访问与之相邻的节点。与深度优先搜索不同，其先遍历周围的是周围节点。<strong>常用于寻找最短路径的解决方案。</strong></p>
+</li>
+<li><p>基本模型（通过队列完成）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">起始点入队;</div><div class="line"><span class="keyword">while</span>(队列不为空)</div><div class="line">&#123;</div><div class="line">   头结点出队;</div><div class="line">   <span class="keyword">for</span>(遍历周围的子节点)</div><div class="line">   &#123;</div><div class="line">      若它是所求的目标状态, 跳出循环;</div><div class="line">      否则, 将队头节点的所有子结点全都入队;</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>算法的关键在于先将起始点入队，然后遍历周围的节点，已广度为第一优先级，所以通过广度优先算法最先找到的一定是路径最短的那个。</p>
+</li>
+<li><p>一个王子拯救公主的故事</p>
+<p>小时候大家肯定都玩过迷宫游戏，游戏的大概就是在迷宫中找一条绕过阻碍的路线到达公主所在的地方拯救公主。大概就像这样（图画的比较挫，不过很能表达意思：）：</p>
+<p><img src="http://img.blog.csdn.net/20170503193521142?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>​</p>
+<p>王子从（0，0）出发寻找公主，中间要绕过障碍物，找到最近的到达公主的路线长，这里就可以通过广度优先算法来实现。</p>
+</li>
+<li><p>代码实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Bfs</span> </span>&#123;</div><div class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> p=<span class="number">3</span>;</div><div class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> q=<span class="number">2</span>;</div><div class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> direct[][]=&#123;&#123;<span class="number">1</span>,<span class="number">0</span>&#125;,&#123;<span class="number">0</span>,<span class="number">1</span>&#125;,&#123;-<span class="number">1</span>,<span class="number">0</span>&#125;,&#123;<span class="number">0</span>,-<span class="number">1</span>&#125;&#125;;  <span class="comment">//下一步的方向</span></div><div class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> book_maze[][]=<span class="keyword">new</span> <span class="keyword">boolean</span>[<span class="number">5</span>][<span class="number">4</span>];</div><div class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> maze[][]=<span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">5</span>][<span class="number">4</span>];</div><div class="line">	</div><div class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Step</span></span>&#123;</div><div class="line">		<span class="keyword">public</span> <span class="keyword">int</span> x;</div><div class="line">		<span class="keyword">public</span> <span class="keyword">int</span> y;</div><div class="line">		<span class="keyword">public</span> <span class="keyword">int</span> count;   <span class="comment">//已经经过的步数</span></div><div class="line">		<span class="function"><span class="keyword">public</span> <span class="title">Step</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y, <span class="keyword">int</span> count)</span> </span>&#123;</div><div class="line">			<span class="keyword">super</span>();</div><div class="line">			<span class="keyword">this</span>.x = x;</div><div class="line">			<span class="keyword">this</span>.y = y;</div><div class="line">			<span class="keyword">this</span>.count = count;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	<span class="meta">@Test</span></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">bfs</span><span class="params">()</span></span>&#123;</div><div class="line">		maze[<span class="number">0</span>][<span class="number">2</span>]=<span class="number">1</span>;</div><div class="line">		maze[<span class="number">2</span>][<span class="number">2</span>]=<span class="number">1</span>;</div><div class="line">		maze[<span class="number">3</span>][<span class="number">1</span>]=<span class="number">1</span>;</div><div class="line">		maze[<span class="number">4</span>][<span class="number">3</span>]=<span class="number">1</span>;              <span class="comment">//初始化迷宫</span></div><div class="line">		Queue&lt;Step&gt; queue=<span class="keyword">new</span> LinkedList&lt;&gt;();</div><div class="line">		Step step1=<span class="keyword">new</span> Step(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>);</div><div class="line">		queue.offer(step1);</div><div class="line">		<span class="keyword">while</span>(!queue.isEmpty())&#123;</div><div class="line">			Step temp=queue.poll();</div><div class="line">			<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">3</span>;i++)&#123;</div><div class="line">				<span class="keyword">int</span> tx=temp.x+direct[i][<span class="number">0</span>];</div><div class="line">				<span class="keyword">int</span> ty=temp.y+direct[i][<span class="number">1</span>];</div><div class="line">				<span class="keyword">if</span>(tx==p&amp;&amp;ty==q)&#123;</div><div class="line">					System.out.println(<span class="string">"success:"</span>+temp.count);  <span class="comment">//找到即为最短路径</span></div><div class="line">                  	  <span class="keyword">return</span>;</div><div class="line">				&#125;</div><div class="line">				<span class="keyword">if</span>(tx&gt;<span class="number">4</span>||tx&lt;<span class="number">0</span>||ty&gt;<span class="number">3</span>||ty&lt;<span class="number">0</span>)&#123;</div><div class="line">					<span class="keyword">continue</span>;</div><div class="line">				&#125;</div><div class="line">				<span class="keyword">if</span>(maze[tx][ty]!=<span class="number">1</span>&amp;&amp;book_maze[tx][ty]!=<span class="keyword">true</span>)&#123;</div><div class="line">					book_maze[tx][ty]=<span class="keyword">true</span>;</div><div class="line">					queue.offer(<span class="keyword">new</span> Step(tx,ty,temp.count+<span class="number">1</span>));</div><div class="line">				&#125;</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ol>
+<li>代码中首先将第一个step（即王子的出发路径）入队。</li>
+<li>然后遍历step1周围的路，如果能走的，则加入队列，如果不能走则放弃，不加入队列。</li>
+<li>不断循环直到队列为空或者已经找到公主为止。</li>
+</ol>
+</li>
+<li><p>同样，我们也可以使用深度优先算法成功找到拯救公主的最短路线。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> p=<span class="number">3</span>;</div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> q=<span class="number">2</span>;</div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> mini=<span class="number">9999</span>;</div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> direct[][]=&#123;&#123;<span class="number">1</span>,<span class="number">0</span>&#125;,&#123;<span class="number">0</span>,<span class="number">1</span>&#125;,&#123;-<span class="number">1</span>,<span class="number">0</span>&#125;,&#123;<span class="number">0</span>,-<span class="number">1</span>&#125;&#125;;</div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> book_maze[][]=<span class="keyword">new</span> <span class="keyword">boolean</span>[<span class="number">5</span>][<span class="number">4</span>];</div><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> maze[][]=<span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">5</span>][<span class="number">4</span>];</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">maze</span><span class="params">(<span class="keyword">int</span> x,<span class="keyword">int</span> y,<span class="keyword">int</span> step)</span></span>&#123;</div><div class="line">	<span class="keyword">if</span>(x==p&amp;&amp;y==q)&#123;</div><div class="line">		<span class="keyword">if</span>(step&lt;mini)&#123;</div><div class="line">			mini=step;</div><div class="line">		&#125;</div><div class="line">		<span class="keyword">return</span> ;</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">	<span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;<span class="number">3</span>;i++)&#123;</div><div class="line">		<span class="keyword">int</span> tx=x+direct[i][<span class="number">0</span>];</div><div class="line">		<span class="keyword">int</span> ty=y+direct[i][<span class="number">1</span>];</div><div class="line">		<span class="keyword">if</span>(tx&gt;<span class="number">4</span>||tx&lt;<span class="number">0</span>||ty&gt;<span class="number">3</span>||ty&lt;<span class="number">0</span>)&#123;</div><div class="line">			<span class="keyword">continue</span>;</div><div class="line">		&#125;</div><div class="line">		<span class="keyword">if</span>(maze[tx][ty]==<span class="number">0</span>&amp;&amp;book_maze[tx][ty]==<span class="keyword">false</span>)&#123;</div><div class="line">			book_maze[tx][ty]=<span class="keyword">true</span>;</div><div class="line">			maze(tx,ty,step+<span class="number">1</span>);</div><div class="line">			book_maze[tx][ty]=<span class="keyword">false</span>;</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="meta">@Test</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testMaze</span><span class="params">()</span></span>&#123;</div><div class="line">	maze[<span class="number">0</span>][<span class="number">2</span>]=<span class="number">1</span>;</div><div class="line">	maze[<span class="number">2</span>][<span class="number">2</span>]=<span class="number">1</span>;</div><div class="line">	maze[<span class="number">3</span>][<span class="number">1</span>]=<span class="number">1</span>;</div><div class="line">	maze[<span class="number">4</span>][<span class="number">3</span>]=<span class="number">1</span>;</div><div class="line">	maze(<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>);</div><div class="line">	System.out.println(mini);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>由于DFS最先找到的路径并不一定就是最小的，所以通过引入变量mini，每次找到路径就将其与mini比较，如果mini比找到的大，则将mini更新为刚找到的路径长度。</p>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/03/数据结构与算法/树的基础/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="帅到没朋友">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/06/03/数据结构与算法/树的基础/" itemprop="url">Unbenannt</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-06-03T12:02:05+08:00">
+                2017-06-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="树的基本知识"><a href="#树的基本知识" class="headerlink" title="树的基本知识"></a>树的基本知识</h1><ul>
+<li><p>树的基本特性（树是一种特殊的图）</p>
+<ol>
+<li><p>一棵树中的任意两个节点有且仅有唯一的一条路径联通</p>
+</li>
+<li><p>一棵树如果有n个节点，那么它一定有n-1条边</p>
+</li>
+<li><p>一棵树中加一条边会构成一个回路</p>
+<p><img src="http://img.blog.csdn.net/20170502205245076?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+</li>
+</ol>
+</li>
+<li><p>树的基本名词</p>
+<blockquote>
+<ul>
+<li>结点的度（Degree）：结点的子树个数；</li>
+<li>树的度：树的所有结点中最大的度数；</li>
+<li>叶结点（Leaf）：度为0的结点；</li>
+<li>父结点（Parent）：有子树的结点是其子树的根节点的父结点；</li>
+<li>子结点/孩子结点（Child）：若A结点是B结点的父结点，则称B结点是A结点的子结点；</li>
+<li>兄弟结点（Sibling）：具有同一个父结点的各结点彼此是兄弟结点；</li>
+<li>路径和路径长度：从结点n1到nk的路径为一个结点序列n1，n2，…，nk。ni是ni+1的父结点。路径所包含边的个数为路径的长度；</li>
+<li>祖先结点（Ancestor）：沿树根到某一结点路径上的所有结点都是这个结点的祖先结点；</li>
+<li>子孙结点（Descendant）：某一结点的子树中的所有结点是这个结点的子孙；</li>
+<li>结点的层次（Level）：规定根结点在1层，其他任一结点的层数是其父结点的层数加1；</li>
+<li>树的深度（Depth）：树中所有结点中的最大层次是这棵树的深度；</li>
+</ul>
+</blockquote>
+</li>
+<li><p>树的应用</p>
+<p>树在现实生活中有很多应用，例如比赛的晋级图，家族的家谱图，操作系统的文件结构系统等都是树的实际应用。</p>
+</li>
+</ul>
+<h1 id="二叉树"><a href="#二叉树" class="headerlink" title="二叉树"></a>二叉树</h1><p>二叉树是一种特殊的树。其最大的特点是每个节点最多有两个儿子，其严格定义为：二叉树要么为空，要么由根节点，左子树和右子树构成。</p>
+<ul>
+<li><p>满二叉树与完全二叉树</p>
+<blockquote>
+<ul>
+<li><p>满二叉树：如果二叉树中每隔内部的节点都有两个儿子，这样的树叫做满二叉树。</p>
+<p><img src="http://img.blog.csdn.net/20170502205245076?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+</li>
+<li><p>完全二叉树：除了最右边位置上有一个或几个叶节点缺少外，其他都是丰满的，这样的树称为完全二叉树。</p>
+<p><img src="http://img.blog.csdn.net/20170506100629805?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+</li>
+</ul>
+</blockquote>
+</li>
+<li><p>堆</p>
+<p>堆是一种特殊的树，如果所有父节点都比子节点小，符合这样的完全二叉树成为最小堆。相反，如果所有父节点都比子节点大，则称为最大堆。</p>
+<p><img src="http://img.blog.csdn.net/20170506101024058?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>​</p>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/03/数据结构与算法/散列/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="帅到没朋友">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/06/03/数据结构与算法/散列/" itemprop="url">Unbenannt</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-06-03T12:01:49+08:00">
+                2017-06-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="散列"><a href="#散列" class="headerlink" title="散列"></a>散列</h1><p>散列是最有用的数据结构之一。被用于快速查找某个目标。一般查找的方式例如遍历查找（运行时间为O（n））,二分查找（运行时间为O（logN）），而通过散列查找的速度可以达到O（1）；</p>
+<ul>
+<li><p>散列函数</p>
+<p>无论你给它什么数据，返回的都是一个数字。但并不是随机返回，而是根据数据返回对应的数字：</p>
+<ul>
+<li>它必须是一致的。例如，假设你输入apple时得到的是4，那么每次输入apple时，得到的都</li>
+</ul>
+<p>必须为4。如果不是这样，散列表将毫无用处。</p>
+<ul>
+<li>它应将不同的输入映射到不同的数字。 例如， 如果一个散列函数不管输入是什么都返回1，</li>
+</ul>
+<p>它就不是好的散列函数。最理想的情况是，将不同的输入映射到不同的数字。</p>
+<p><strong>具体实现：通过将数据存放在返回数字对应的数组中，那么下次查找就可以直接再次通过计算数字很快找到数据存储的位置。（通过计算”Apple”返回数字3，则将apple的价格放在数组下标3中）</strong></p>
+<p>​</p>
+<p><img src="http://img.blog.csdn.net/20170504143045663?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>​</p>
+</li>
+<li><p>散列的适用场景</p>
+<ul>
+<li>模拟映射关系；（例如：python中的dict，java中的map）</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>防止重复；</li>
+<li><p>缓存/记住数据，以免服务器再通过处理来生成它们。</p>
+</li>
+<li><p>冲突</p>
+<p>散列的原理是通过将数据通过散列函数计算得到一个数字实现的，自然而然我们就会想到如果两个数据通过散列函数得到的数字一样该怎么办呢？直接存储的话后面的数字就会将前面的数据覆盖。</p>
+</li>
+<li><p>冲突的解决</p>
+<p>解决冲突最简单的办法就是在数组中不要直接存储我们要存储的数据，而是存储一个链表。实际的数据存储在这个链表里面。</p>
+<p><img src="http://img.blog.csdn.net/20170504144120791?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>这样就不用担心冲突的问题了，虽然通过散列没有直接找到目标，但链表上的数据一般不多，比直接搜索也快多了。^-^。</p>
+</li>
+<li><p>散列表的性能</p>
+<p>通过一张表我们可以对比一下散列表和数组和链表：</p>
+</li>
+</ul>
+<p><img src="http://img.blog.csdn.net/20170504145305158?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>​    可以看到在最好情况下（即数据均匀分布在散列表中），散列表集合了数组与链表的优点。可是在最坏情况下又集合了数组与链表的缺点，所以散列函数的编写显得格外重要。它决定了散列表的性能。所以一个散列表的性能指标如下：</p>
+<pre><code>1. 较低的填装因子。（装填因子=（散列表中已经被占用的位置/位置总数），一旦超过0.7，一般就需要调整散列表的长度了。）
+2. 良好的散列函数。
+</code></pre>
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/03/数据结构与算法/求解最大子数组/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="帅到没朋友">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/06/03/数据结构与算法/求解最大子数组/" itemprop="url">Unbenannt</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-06-03T12:01:31+08:00">
+                2017-06-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="求解最大子数组"><a href="#求解最大子数组" class="headerlink" title="求解最大子数组"></a>求解最大子数组</h1><ul>
+<li><p>问题描述，神马是最大子数组</p>
+<blockquote>
+<p>假定我们一个已知的数组为：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&gt; <span class="keyword">int</span> numbers[]=&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">6</span>,<span class="number">3</span>,-<span class="number">5</span>,-<span class="number">7</span>,<span class="number">1</span>,-<span class="number">6</span>,<span class="number">8</span>&#125;;</div><div class="line">&gt;</div></pre></td></tr></table></figure>
+</blockquote>
+<p>&gt;</p>
+<blockquote>
+<p>现在我们需要求解其中某几个数之和最大的一段子数组，如果不考虑方法的复杂性，首先我们可以考虑暴力求解，即将所有可能的组合进行排列组合。那么我们可以得到n*(n-1)/2（不考虑顺序的排列组合）种可能，其复杂度为O(n^2)。</p>
+</blockquote>
+</li>
+<li><p>为求得更好的解题思路，我们可以考虑使用分治法。</p>
+<blockquote>
+<ol>
+<li><p>首先我们将数组按照中点分成两个部分</p>
+<p> <img src="http://img.blog.csdn.net/20170418191214776?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述">这样求解最大子数组的问题就变成了求左边部分，右边部分，跨过中间部分的最大子数组，其中求解左边和右边与求解整个数组的最大子数组逻辑相同。关键在于如何求解中间部分的最大子数组。</p>
+</li>
+<li><p>对于求解中间部分的最大子数组，由于该数组会经过中点，所以可以分解为两部分，分别为从middle向左出发，到左边某个index的最大值以及从middle出发，到右边某个index的最大值。将两个部分的最大值相加即可得到跨过中点的最大子数组，其时间复杂度为O(n)；其基本实现如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">&gt;    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Model <span class="title">findCrossMiddle</span><span class="params">(<span class="keyword">int</span> leftIndex,<span class="keyword">int</span> middle,<span class="keyword">int</span> rightIndex)</span></span>&#123;</div><div class="line">&gt;    		<span class="keyword">int</span> leftSum=Integer.MIN_VALUE;</div><div class="line">&gt;    		<span class="keyword">int</span> leftRes=middle;</div><div class="line">&gt;    		<span class="keyword">int</span> rightSum=Integer.MIN_VALUE;</div><div class="line">&gt;    		<span class="keyword">int</span> rightRes=middle+<span class="number">1</span>;</div><div class="line">&gt;    		<span class="keyword">int</span> sum=<span class="number">0</span>;</div><div class="line">&gt;    		<span class="keyword">for</span>(<span class="keyword">int</span> i=middle;i&gt;=leftIndex;i--)&#123;</div><div class="line">&gt;    			sum+=numbers[i];</div><div class="line">&gt;    			<span class="keyword">if</span>(sum&gt;leftSum)&#123;</div><div class="line">&gt;    				leftSum=sum;</div><div class="line">&gt;    				leftRes=i;</div><div class="line">&gt;    			&#125;</div><div class="line">&gt;    		&#125;     <span class="comment">//从middle向左出发，到左边某个index的最大值，并记录下标</span></div><div class="line">&gt;    		sum=<span class="number">0</span>;</div><div class="line">&gt;    		<span class="keyword">for</span>(<span class="keyword">int</span> j=middle+<span class="number">1</span>;j&lt;=rightIndex;j++)&#123;</div><div class="line">&gt;    			sum+=numbers[j];</div><div class="line">&gt;    			<span class="keyword">if</span>(sum&gt;rightSum)&#123;</div><div class="line">&gt;    				rightSum=sum;</div><div class="line">&gt;    				rightRes=j;</div><div class="line">&gt;    			&#125;</div><div class="line">&gt;    		&#125;  	<span class="comment">//从middle向左出发，到左边某个index的最大值，并记录下标</span></div><div class="line">&gt;    		<span class="keyword">return</span> <span class="keyword">new</span> Model(leftRes,rightRes,(leftSum+rightSum));</div><div class="line">&gt;    	&#125;</div><div class="line">&gt;</div></pre></td></tr></table></figure>
+</li>
+</ol>
+</blockquote>
+</li>
+<li><p>实现算法</p>
+<blockquote>
+<p>分析完基本实现思路，很自然就想到通过递归完成算法，要想通过递归，就要先知道算法的结束条件。在这里就是当划分的子数组只有一个元素时，则直接返回。在每次递归的时候，比较左中右三段中的哪个最大子数组最大，并返回表示该段中的最大子数组。</p>
+<p>其完整实现代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div></pre></td><td class="code"><pre><div class="line">&gt; <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MaxChildArray</span> </span>&#123;</div><div class="line">&gt; 	</div><div class="line">&gt; 	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> numbers[]=&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">6</span>,<span class="number">3</span>,<span class="number">1</span>,<span class="number">8</span>&#125;;</div><div class="line">&gt; 	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">&gt; 		Model res=findMaxChildArray(<span class="number">0</span>,numbers.length-<span class="number">1</span>);</div><div class="line">&gt; 		System.out.println(res);</div><div class="line">&gt; 	&#125;</div><div class="line">&gt; 	</div><div class="line">&gt; 	<span class="comment">//查找最大子数组的递归方法</span></div><div class="line">&gt; 	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Model <span class="title">findMaxChildArray</span><span class="params">(<span class="keyword">int</span> leftIndex,<span class="keyword">int</span> rightIndex)</span></span>&#123;</div><div class="line">&gt; 		<span class="keyword">if</span>(leftIndex==rightIndex)&#123;</div><div class="line">&gt; 			<span class="keyword">return</span> <span class="keyword">new</span> Model(leftIndex,rightIndex,numbers[leftIndex]);</div><div class="line">&gt; 		&#125;</div><div class="line">&gt; 		<span class="keyword">else</span>&#123;</div><div class="line">&gt; 			<span class="keyword">int</span> middle=((leftIndex+rightIndex)/<span class="number">2</span>);</div><div class="line">&gt; 			Model modelLeft=findMaxChildArray(leftIndex,middle);</div><div class="line">&gt; 			Model modelRight=findMaxChildArray(middle+<span class="number">1</span>, rightIndex);</div><div class="line">&gt; 			Model acrossModel=findCrossMiddle(leftIndex,middle,rightIndex);</div><div class="line">&gt; 			<span class="keyword">if</span>(modelLeft.getSum()&gt;=modelRight.getSum()&amp;&amp;modelLeft.getSum()&gt;=acrossModel.getSum())&#123;</div><div class="line">&gt; 				<span class="keyword">return</span> modelLeft;</div><div class="line">&gt; 			&#125;</div><div class="line">&gt; 			<span class="keyword">else</span> <span class="keyword">if</span>(modelRight.getSum()&gt;=modelLeft.getSum()&amp;&amp;modelRight.getSum()&gt;=acrossModel.getSum())&#123;</div><div class="line">&gt; 				<span class="keyword">return</span> modelRight;</div><div class="line">&gt; 			&#125;</div><div class="line">&gt; 			<span class="keyword">else</span>&#123;</div><div class="line">&gt; 				<span class="keyword">return</span> acrossModel;</div><div class="line">&gt; 			&#125;</div><div class="line">&gt; 		&#125;</div><div class="line">&gt; 	&#125;</div><div class="line">&gt; 	</div><div class="line">&gt; 	<span class="comment">//查找经过中点的最大子数组</span></div><div class="line">&gt; 	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Model <span class="title">findCrossMiddle</span><span class="params">(<span class="keyword">int</span> leftIndex,<span class="keyword">int</span> middle,<span class="keyword">int</span> rightIndex)</span></span>&#123;</div><div class="line">&gt; 		<span class="keyword">int</span> leftSum=Integer.MIN_VALUE;</div><div class="line">&gt; 		<span class="keyword">int</span> leftRes=middle;</div><div class="line">&gt; 		<span class="keyword">int</span> rightSum=Integer.MIN_VALUE;</div><div class="line">&gt; 		<span class="keyword">int</span> rightRes=middle+<span class="number">1</span>;</div><div class="line">&gt; 		<span class="keyword">int</span> sum=<span class="number">0</span>;</div><div class="line">&gt; 		<span class="keyword">for</span>(<span class="keyword">int</span> i=middle;i&gt;=leftIndex;i--)&#123;</div><div class="line">&gt; 			sum+=numbers[i];</div><div class="line">&gt; 			<span class="keyword">if</span>(sum&gt;leftSum)&#123;</div><div class="line">&gt; 				leftSum=sum;</div><div class="line">&gt; 				leftRes=i;</div><div class="line">&gt; 			&#125;</div><div class="line">&gt; 		&#125;</div><div class="line">&gt; 		sum=<span class="number">0</span>;</div><div class="line">&gt; 		<span class="keyword">for</span>(<span class="keyword">int</span> j=middle+<span class="number">1</span>;j&lt;=rightIndex;j++)&#123;</div><div class="line">&gt; 			sum+=numbers[j];</div><div class="line">&gt; 			<span class="keyword">if</span>(sum&gt;rightSum)&#123;</div><div class="line">&gt; 				rightSum=sum;</div><div class="line">&gt; 				rightRes=j;</div><div class="line">&gt; 			&#125;</div><div class="line">&gt; 		&#125;</div><div class="line">&gt; 		<span class="keyword">return</span> <span class="keyword">new</span> Model(leftRes,rightRes,(leftSum+rightSum));</div><div class="line">&gt; 	&#125;</div><div class="line">&gt; 	</div><div class="line">&gt; 	</div><div class="line">&gt; 	</div><div class="line">&gt; 	</div><div class="line">&gt; 	</div><div class="line">&gt; 	<span class="comment">//定义数据模型</span></div><div class="line">&gt; 	<span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Model</span></span>&#123;</div><div class="line">&gt; 		<span class="keyword">private</span> <span class="keyword">int</span> leftIndex;</div><div class="line">&gt; 		<span class="keyword">private</span> <span class="keyword">int</span> rightIndex;</div><div class="line">&gt; 		<span class="keyword">private</span> <span class="keyword">int</span> sum;</div><div class="line">&gt; 		<span class="function"><span class="keyword">public</span> <span class="title">Model</span><span class="params">(<span class="keyword">int</span> leftIndex, <span class="keyword">int</span> rightIndex, <span class="keyword">int</span> sum)</span> </span>&#123;</div><div class="line">&gt; 			<span class="keyword">super</span>();</div><div class="line">&gt; 			<span class="keyword">this</span>.leftIndex = leftIndex;</div><div class="line">&gt; 			<span class="keyword">this</span>.rightIndex = rightIndex;</div><div class="line">&gt; 			<span class="keyword">this</span>.sum = sum;</div><div class="line">&gt; 		&#125;</div><div class="line">&gt; 		<span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getLeftIndex</span><span class="params">()</span> </span>&#123;</div><div class="line">&gt; 			<span class="keyword">return</span> leftIndex;</div><div class="line">&gt; 		&#125;</div><div class="line">&gt; 		<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setLeftIndex</span><span class="params">(<span class="keyword">int</span> leftIndex)</span> </span>&#123;</div><div class="line">&gt; 			<span class="keyword">this</span>.leftIndex = leftIndex;</div><div class="line">&gt; 		&#125;</div><div class="line">&gt; 		<span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getRightIndex</span><span class="params">()</span> </span>&#123;</div><div class="line">&gt; 			<span class="keyword">return</span> rightIndex;</div><div class="line">&gt; 		&#125;</div><div class="line">&gt; 		<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setRightIndex</span><span class="params">(<span class="keyword">int</span> rightIndex)</span> </span>&#123;</div><div class="line">&gt; 			<span class="keyword">this</span>.rightIndex = rightIndex;</div><div class="line">&gt; 		&#125;</div><div class="line">&gt; 		<span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getSum</span><span class="params">()</span> </span>&#123;</div><div class="line">&gt; 			<span class="keyword">return</span> sum;</div><div class="line">&gt; 		&#125;</div><div class="line">&gt; 		<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setSum</span><span class="params">(<span class="keyword">int</span> sum)</span> </span>&#123;</div><div class="line">&gt; 			<span class="keyword">this</span>.sum = sum;</div><div class="line">&gt; 		&#125;</div><div class="line">&gt; 		<span class="meta">@Override</span></div><div class="line">&gt; 		<span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</div><div class="line">&gt; 			<span class="keyword">return</span> <span class="string">"Model [leftIndex="</span> + leftIndex + <span class="string">", rightIndex="</span> + rightIndex + <span class="string">", sum="</span> + sum + <span class="string">"]"</span>;</div><div class="line">&gt; 		&#125;	</div><div class="line">&gt; 	&#125;	</div><div class="line">&gt; &#125;</div><div class="line">&gt;</div></pre></td></tr></table></figure>
+</blockquote>
+<p>&gt;</p>
+<blockquote>
+<p>​</p>
+</blockquote>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/03/docker/docker入门/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="帅到没朋友">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/06/03/docker/docker入门/" itemprop="url">Unbenannt</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-06-03T12:00:15+08:00">
+                2017-06-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="Docker入门"><a href="#Docker入门" class="headerlink" title="Docker入门"></a>Docker入门</h2><p>[TOC]</p>
+<h4 id="Docker安装"><a href="#Docker安装" class="headerlink" title="Docker安装"></a>Docker安装</h4><p>​    建议在ubuntu系统中安装docker学习。（docker在Ubuntu中开发完成的）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">sudo apt-get update</div><div class="line"></div><div class="line">sudo apt-get docker.io  #安装docker，这样安装安装的不是最新版</div><div class="line">docker version  #查看docker的版本</div><div class="line">sudo service docker start  #启动doker服务</div></pre></td></tr></table></figure>
+<h4 id="Docker简介"><a href="#Docker简介" class="headerlink" title="Docker简介"></a>Docker简介</h4><p>​    Docker是一个装应用的容器，每个容器中运行着一个或多个应用，不同的容器之间相互隔离，而且容器之间是可以相互通信的。</p>
+<p>​    Doker容器除了运行其中的应用之外，基本不消耗额外的系统资源保证应用性能的同时，尽量减少系统的开销。最厉害的是，即使其中某个崩溃了，其他应用也不会受到影响可以正常运行。</p>
+<h4 id="Docker的核心概念"><a href="#Docker的核心概念" class="headerlink" title="Docker的核心概念"></a>Docker的核心概念</h4><ol>
+<li><p>镜像</p>
+<p>Docker镜像类似与虚拟机的镜像，一个镜像可以包含一个完整的操作系统，里面包含了我们应用以及必须的运行环境。镜像是docker的基础，它是一个只读的模版，我们可以直接下载很多镜像作为我们的模版。</p>
+</li>
+<li><p>容器</p>
+<p>Docker 容器和文件夹很类似，一个Docker容器包含了所有的某个应用运行所需要的环境。每一个 Docker 容器都是从 Docker 镜像创建的。Docker 容器可以运行、开始、停止、移动和删除。每一个 Docker 容器都是独立和安全的应用平台，Docker 容器是 Docker 的运行部分。</p>
+</li>
+<li><p>仓库</p>
+<p>Docker仓库类似于代码仓库，是Docker集中存放镜像文件的地方。通过不同的仓库，我们可以直接下载到很多现成的镜像。</p>
+</li>
+</ol>
+<h4 id="通过Docker安装Nginx容器"><a href="#通过Docker安装Nginx容器" class="headerlink" title="通过Docker安装Nginx容器"></a>通过Docker安装Nginx容器</h4><p>​    通过安装nginx的栗子熟悉如何docker的基本使用，下载需要的镜像直接登陆网易蜂巢：<a href="https://c.163.com/hub#/m/home/：" target="_blank" rel="external">https://c.163.com/hub#/m/home/：</a></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">service docker start  #开启docker服务</div><div class="line">docker pull hub.c.163.com/library/nginx:latest  #下载nginx镜像</div><div class="line"></div><div class="line">docker run -d hub.c.163.com/library/nginx  #以后台进程运行容器</div><div class="line"></div><div class="line">docker ps   #查看当前的容器进程，其中的CONTAINER ID我们操作容器时会用到</div><div class="line"></div><div class="line">docker exec -it CONTAINER ID bash  #运行容器中的命令，这里是启动linux的终端，因为nginx是运行在linux系统中，所以相当于进入了另一个linux系统，从容器中退出使用exit</div><div class="line"></div><div class="line">docker stop CONTAINER ID #停止容器</div><div class="line"></div><div class="line">docker restart CONTAINER ID #重启容器</div></pre></td></tr></table></figure>
+<ul>
+<li><p>Docker的网络映射</p>
+<p>上面我们安装了nginx容器，但是我们在外界如何访问到容器呢？这时我们可以通过网络映射完成，将主机的任意端口映射到容器的任意端口：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">docker run -d -p 8082:80 hub.c.163.com/library/nginx  #将主机的8082端口映射到80端口</div><div class="line"></div><div class="line">docker run -d -P hub.c.163.com/library/nginx  #将主机的随机端口都映射到所有容器端口</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="通过Docker构建JavaWeb项目的镜像"><a href="#通过Docker构建JavaWeb项目的镜像" class="headerlink" title="通过Docker构建JavaWeb项目的镜像"></a>通过Docker构建JavaWeb项目的镜像</h4><ol>
+<li><p>下载Tomcat的镜像</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker pull hub.c.163.com/library/tomcat:latest  #下载Tomcat的镜像，包含jdk</div></pre></td></tr></table></figure>
+</li>
+<li><p>下载MySql的镜像</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker pull hub.c.163.com/library/mysql:latest</div></pre></td></tr></table></figure>
+<p>运行mysql，并创建jpress数据库。密码为root</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker run -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=jpress hub.c.163.com/library/mysql:latest</div></pre></td></tr></table></figure>
+<p>​</p>
+</li>
+<li><p>通过DockFile文件创建镜像</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">vim DockerFile  #新建文件</div></pre></td></tr></table></figure>
+<p>编辑dockFile镜像</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">from hub.c.163.com/library/tomcat:latest  #将tomcat作为基础镜像</div><div class="line">MAINTAINMA 	forever shuaizhao_forever@163.com  #作者信息</div><div class="line">COPY jpress.war /usr/local/tomcat/webapps  #将我们的web项目拷贝到tomcat的webapps目录下</div></pre></td></tr></table></figure>
+</li>
+<li><p>通过DockerFile生成镜像</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker build -t jpress:lastest .   #编译当前目录下的DockerFile,命名为jpress,tag为lastest</div></pre></td></tr></table></figure>
+</li>
+<li><p>运行自定义的容器</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">docker run -d -p 8088:8080 jpress</div></pre></td></tr></table></figure>
+<p>​</p>
+</li>
+</ol>
+<p>​    </p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/03/hadoop/MapReduce基础/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="帅到没朋友">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/06/03/hadoop/MapReduce基础/" itemprop="url">Unbenannt</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-06-03T11:59:19+08:00">
+                2017-06-03
               </time>
             
 
@@ -362,7 +1256,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/30/namenode管理元数据机制/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/06/03/hadoop/namenode管理元数据机制/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="forever_zs">
@@ -381,7 +1275,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2017/05/30/namenode管理元数据机制/" itemprop="url">Unbenannt</a></h1>
+                <a class="post-title-link" href="/2017/06/03/hadoop/namenode管理元数据机制/" itemprop="url">Unbenannt</a></h1>
         
 
         <div class="post-meta">
@@ -393,8 +1287,8 @@
               
                 <span class="post-meta-item-text">Veröffentlicht am</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-05-30T13:13:05+08:00">
-                2017-05-30
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-06-03T11:59:19+08:00">
+                2017-06-03
               </time>
             
 
@@ -481,278 +1375,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/30/redis入门/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="forever_zs">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="帅到没朋友">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/05/30/redis入门/" itemprop="url">Unbenannt</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-05-30T13:12:56+08:00">
-                2017-05-30
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="Redis入门"><a href="#Redis入门" class="headerlink" title="Redis入门"></a>Redis入门</h1><p>[TOC]</p>
-<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>​    Redis是一个开源，高级的<strong>键值存储</strong>和一个适用的解决方案，用于构建高性能，可扩展的Web应用程序。其主要特点有：</p>
-<blockquote>
-<ul>
-<li><strong>Redis将其数据库完全保存在内存中，仅使用磁盘进行持久化。</strong>（内存数据库）</li>
-<li>与其它键值数据存储相比，Redis有一组相对丰富的数据类型。</li>
-<li>Redis可以将数据复制到任意数量的从机中。</li>
-</ul>
-</blockquote>
-<p>​    为啥我们要用redis，希望下面的优点能说服你：</p>
-<blockquote>
-<ul>
-<li>异常快 - Redis非常快，每秒可执行大约110000次的设置(SET)操作，每秒大约可执行81000次的读取/获取(GET)操作。</li>
-<li>支持丰富的数据类型 - Redis支持开发人员常用的大多数数据类型，例如列表，集合，排序集和散列等等。这使得Redis很容易被用来解决各种问题，因为我们知道哪些问题可以更好使用地哪些数据类型来处理解决。</li>
-<li>操作具有原子性 - 所有Redis操作都是原子操作，这确保如果两个客户端并发访问，Redis服务器能接收更新的值。</li>
-<li>多实用工具 - Redis是一个多实用工具，可用于多种用例，如：缓存，消息队列(Redis本地支持发布/订阅)，应用程序中的任何短期数据，例如，web应用程序中的会话，网页命中计数等。</li>
-</ul>
-</blockquote>
-<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><ol>
-<li><p>从<a href="https://redis.io/" target="_blank" rel="external">官网</a>下载最新stable（稳定）版。放到linux服务器上。</p>
-</li>
-<li><p>按照如下命令安装</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">tar -zvxf redis-3.2.8.tar.gz  #解压安装包</div><div class="line">cd redis-3.2.8</div><div class="line"></div><div class="line">make   /#编译c源码（需要先安装gcc编译器）</div><div class="line">make PREFIX=/usr/local/redis install   #安装到指定目录下，一般Linux的软件习惯装载/usr/local下面</div><div class="line"></div><div class="line">cp redis.conf /usr/local/redis/ #复制解压目录下的配置文件到redis安装目录</div><div class="line">bin/redis-server redis.conf   #启动redis服务并指定配置文件</div><div class="line">./redis-cli  #新开一个窗口并启动客户端</div></pre></td></tr></table></figure>
-</li>
-<li><p>如果是远程主机连接的话</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">redis-cli -h host -p port -a password</div></pre></td></tr></table></figure>
-<p>将redis启动为后台服务（设置redis.conf并修改daemonize的值）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">daemonize yes          #设置为后天进程，默认为no</div></pre></td></tr></table></figure>
-<p>​</p>
-<p>​</p>
-</li>
-</ol>
-<h1 id="基本数据类型的操作"><a href="#基本数据类型的操作" class="headerlink" title="基本数据类型的操作"></a>基本数据类型的操作</h1><ul>
-<li><p>字符串操作（详细操作可以参考官方文档或者<a href="http://www.yiibai.com/redis/redis_strings.html" target="_blank" rel="external">教程</a>）</p>
-<p>Redis字符串命令用于管理Redis中的字符串值。以下是使用Redis字符串命令的基本语法：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">SET mykey "redis"      #设置key-value对</div><div class="line">ex:</div><div class="line">SET key value			#	此命令设置指定键的值。</div><div class="line">GET key					#	获取指定键的值。</div><div class="line">GETRANGE key start end	#	获取存储在键上的字符串的子字符串。</div><div class="line">GETSET key value		#	设置键的字符串值并返回其旧值。</div></pre></td></tr></table></figure>
-<p>​</p>
-</li>
-<li><p>List操作（可以存在相同元素，如果需要不能存在相同元素则可以使用Set操作）</p>
-<p>在Redis中，List类型是按照插入顺序排序的字符串链表。和数据结构中的普通链表一样，我们可以在其头部(left)和尾部(right)添加新的元素。在插入时，如果该键并不存在，Redis将为该键创建一个新的链表。与此相反，如果链表中所有的元素均被移除，那么该键也将会被从数据库中删除。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">lpush list1 "forever"  #向list1中加入</div><div class="line">lpush list1 "cll"  #向list1中加入</div><div class="line">lpush list1 "wifi"  #向list1中加入</div><div class="line">LLEN key	#获取列表的长度</div><div class="line">LPOP key	#删除并获取列表中的第一个元素</div><div class="line">LPUSH key value1 [value2]	#将一个或多个值添加到列表</div><div class="line">LPUSHX key value	    #仅当列表存在时，才向列表添加值</div><div class="line">LRANGE key start stop	#从列表中获取一系列元素</div><div class="line">LREM key count value	#从列表中删除元素</div></pre></td></tr></table></figure>
-</li>
-<li><p>Hash操作</p>
-<p>Redis Hashes是字符串字段和字符串值之间的映射。 因此，它们是表示对象的完美数据类型。在Redis中，每个哈希(散列)可以存储多达4亿个键-值对。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">hset map1  name zs  #向map1的hash表中加入key-value</div><div class="line">HDEL key field2 [field2]	#删除一个或多个哈希字段。</div><div class="line">HEXISTS key field			#判断是否存在散列字段。</div><div class="line">HGET key field				#获取存储在指定键的哈希字段的值。</div><div class="line">HGETALL key					#获取存储在指定键的哈希中的所有字段和值</div></pre></td></tr></table></figure>
-</li>
-<li><p>Set操作</p>
-<p>Redis集合是唯一字符串的无序集合。 唯一值表示集合中不允许键中有重复的数据。在Redis中设置添加，删除和测试成员的存在(恒定时间O(1)，而不考虑集合中包含的元素数量)。列表的最大长度为<code>2^32 - 1</code>个元素</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">SADD myset "redis" #添加到set</div><div class="line">SMEMBERS "myset"   #获取myset所有元素</div><div class="line">SCARD key							#获取集合中的成员数</div><div class="line">SDIFF key1 [key2]					#	减去多个集合</div><div class="line">SDIFFSTORE destination key1 [key2]	#	减去多个集并将结果集存储在键中</div><div class="line">SINTER key1 [key2]					#	相交多个集合</div><div class="line">SINTERSTORE destination key1 [key2]	#		交叉多个集合并将结果集存储在键中</div><div class="line">SISMEMBER key member				#	判断确定给定值是否是集合的成员</div></pre></td></tr></table></figure></li>
-</ul>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/30/Lucen入门/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="forever_zs">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="帅到没朋友">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/05/30/Lucen入门/" itemprop="url">Unbenannt</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2017-05-30T13:12:37+08:00">
-                2017-05-30
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -798,7 +1420,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-count">8</span>
                 <span class="site-state-item-name">Artikel</span>
               </a>
             </div>
