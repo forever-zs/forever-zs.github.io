@@ -74,7 +74,7 @@
 <link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="js语法,javascript入门," />
+  <meta name="keywords" content="js语法函数,javascript入门," />
 
 
 
@@ -91,13 +91,13 @@
 
 
 <meta name="description" content="JavaScript的函数[TOC] 函数的定义 普通函数定义 1234567function abs(x) &amp;#123;    if (x &amp;gt;= 0) &amp;#123;        return x;    &amp;#125; else &amp;#123;        return -x;    &amp;#125;&amp;#125;  指定变量的函数定义 1234567var abs = function (x)">
-<meta name="keywords" content="js语法,javascript入门">
+<meta name="keywords" content="js语法函数,javascript入门">
 <meta property="og:type" content="article">
 <meta property="og:title" content="JavaScript的函数">
 <meta property="og:url" content="http://yoursite.com/2017/07/10/前端框架/JavaScript学习/JavaScript函数/index.html">
 <meta property="og:site_name" content="帅到没朋友">
 <meta property="og:description" content="JavaScript的函数[TOC] 函数的定义 普通函数定义 1234567function abs(x) &amp;#123;    if (x &amp;gt;= 0) &amp;#123;        return x;    &amp;#125; else &amp;#123;        return -x;    &amp;#125;&amp;#125;  指定变量的函数定义 1234567var abs = function (x)">
-<meta property="og:updated_time" content="2017-07-10T02:58:39.000Z">
+<meta property="og:updated_time" content="2017-07-14T08:58:38.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="JavaScript的函数">
 <meta name="twitter:description" content="JavaScript的函数[TOC] 函数的定义 普通函数定义 1234567function abs(x) &amp;#123;    if (x &amp;gt;= 0) &amp;#123;        return x;    &amp;#125; else &amp;#123;        return -x;    &amp;#125;&amp;#125;  指定变量的函数定义 1234567var abs = function (x)">
@@ -403,8 +403,7 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">var arr = [<span class="number">10</span>, <span class="number">20</span>, <span class="number">1</span>, <span class="number">2</span>];</div><div class="line">arr.sort(function (x, y) &#123;</div><div class="line">    <span class="keyword">if</span> (x &lt; y) &#123;</div><div class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (x &gt; y) &#123;</div><div class="line">        <span class="keyword">return</span> <span class="number">1</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;); <span class="comment">// [1, 2, 10, 20]</span></div></pre></td></tr></table></figure>
 </li>
 </ul>
-<p>####函数的闭包</p>
-<ul>
+<h4 id="函数的闭包"><a href="#函数的闭包" class="headerlink" title="函数的闭包"></a>函数的闭包</h4><ul>
 <li><p>高阶函数除了可以接受函数作为参数外，还可以把函数作为结果值返回。</p>
 <p>举个栗子：正常的求和函数</p>
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">sum</span>(<span class="params">arr</span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> arr.reduce(<span class="function"><span class="keyword">function</span> (<span class="params">x, y</span>) </span>&#123;</div><div class="line">        <span class="keyword">return</span> x + y;</div><div class="line">    &#125;);</div><div class="line">&#125;</div><div class="line">sum([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]); <span class="comment">// 15</span></div></pre></td></tr></table></figure>
@@ -454,7 +453,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/js语法/" rel="tag"># js语法</a>
+            <a href="/tags/js语法函数/" rel="tag"># js语法函数</a>
           
             <a href="/tags/javascript入门/" rel="tag"># javascript入门</a>
           
@@ -478,6 +477,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/07/14/前端框架/JavaScript学习/javaScript单引号与双引号的区别/" rel="prev" title="">
+                 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -549,7 +552,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">Artikel</span>
               </a>
             </div>
@@ -606,7 +609,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#JavaScript的函数"><span class="nav-number">1.</span> <span class="nav-text">JavaScript的函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#函数的定义"><span class="nav-number">1.0.1.</span> <span class="nav-text">函数的定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Arguments关键字"><span class="nav-number">1.0.2.</span> <span class="nav-text">Arguments关键字</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Rest参数"><span class="nav-number">1.0.3.</span> <span class="nav-text">Rest参数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#变量-的作用域"><span class="nav-number">1.0.4.</span> <span class="nav-text">变量 的作用域</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#装饰器"><span class="nav-number">1.0.5.</span> <span class="nav-text">装饰器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#高阶函数"><span class="nav-number">1.0.6.</span> <span class="nav-text">高阶函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#箭头函数"><span class="nav-number">1.0.7.</span> <span class="nav-text">箭头函数</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#JavaScript的函数"><span class="nav-number">1.</span> <span class="nav-text">JavaScript的函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#函数的定义"><span class="nav-number">1.0.1.</span> <span class="nav-text">函数的定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Arguments关键字"><span class="nav-number">1.0.2.</span> <span class="nav-text">Arguments关键字</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Rest参数"><span class="nav-number">1.0.3.</span> <span class="nav-text">Rest参数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#变量-的作用域"><span class="nav-number">1.0.4.</span> <span class="nav-text">变量 的作用域</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#装饰器"><span class="nav-number">1.0.5.</span> <span class="nav-text">装饰器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#高阶函数"><span class="nav-number">1.0.6.</span> <span class="nav-text">高阶函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#函数的闭包"><span class="nav-number">1.0.7.</span> <span class="nav-text">函数的闭包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#箭头函数"><span class="nav-number">1.0.8.</span> <span class="nav-text">箭头函数</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>
