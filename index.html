@@ -271,6 +271,372 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/08/01/python/用python撸出一个静态web服务器/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="帅到没朋友">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/08/01/python/用python撸出一个静态web服务器/" itemprop="url">python构建简单的静态web服务器</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-01T20:10:33+08:00">
+                2017-08-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/python进阶/" itemprop="url" rel="index">
+                    <span itemprop="name">python进阶</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="python搭建简单的静态web服务器"><a href="#python搭建简单的静态web服务器" class="headerlink" title="python搭建简单的静态web服务器"></a>python搭建简单的静态web服务器</h2><p>[TOC]</p>
+<h4 id="储备知识"><a href="#储备知识" class="headerlink" title="储备知识"></a>储备知识</h4><ul>
+<li>一丢丢的python（io和多线程的知识）</li>
+<li>一丢丢的http协议</li>
+<li>一丢丢的tcp/ip协议（当然不了解也没关系）</li>
+<li>一丢丢的正则表达式知识</li>
+</ul>
+<h4 id="web服务器基本原理"><a href="#web服务器基本原理" class="headerlink" title="web服务器基本原理"></a>web服务器基本原理</h4><ul>
+<li><p>当在浏览器的地址栏输入一个ip与端口之后，浏览器就会通过tcp/ip协议与相应的主机端口进程建立联系。经历过三次握手之后就会将http请求发送到相应的服务器进程去，之前我们了解的http协议在服务进程收到的其实就是一串有特殊格式的字符串。</p>
+<p>当我们浏览器输入<a href="localhost:9876" target="_blank" rel="external">localhost:9876</a> 后服务进程实际收到的如下：</p>
+<p><img src="http://img.blog.csdn.net/20170801212433632?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+</li>
+</ul>
+<h4 id="大致流程"><a href="#大致流程" class="headerlink" title="大致流程"></a>大致流程</h4><ol>
+<li><p>在服务端建立tcp服务进程，为了保证服务端可以同时处理多个请求，我们需要在每接受一个请求后为其单独使用一个线程（或者进程）为其进行服务。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">server = socket(AF_INET, SOCK_STREAM)</div><div class="line">server.setsockopt(SOL_SOCKET, SO_REUSEADDR, <span class="number">1</span>)</div><div class="line">address = (<span class="string">''</span>, <span class="number">9876</span>)</div><div class="line">server.bind(address)</div><div class="line">server.listen(<span class="number">10</span>)</div><div class="line"><span class="keyword">try</span>:</div><div class="line">    <span class="keyword">while</span> <span class="keyword">True</span>:</div><div class="line">        print(<span class="string">"-------等待接受服务----------"</span>)</div><div class="line">        client, client_address = server.accept()</div><div class="line">        print(<span class="string">"-------接受服务成功----------"</span>)</div><div class="line">        <span class="comment"># 如果使用进程服务，可以在在后面把client关闭。</span></div><div class="line">        p = Thread(target=deal_socket, args=(client,))</div><div class="line">        p.start()</div><div class="line"><span class="keyword">except</span> Exception <span class="keyword">as</span> e:</div><div class="line">       print(e)</div><div class="line"><span class="keyword">finally</span>:</div><div class="line">       server.close()</div><div class="line">       print(<span class="string">"-------服务结束----------"</span>)</div></pre></td></tr></table></figure>
+<p>这里的deal_socket函数就是我们为一个请求服务的函数，在一个单独的线程中运行。</p>
+</li>
+<li><p>在处理url请求的函数中，我们需要读取出客户端的http请求。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">deal_socket</span><span class="params">(client)</span>:</span></div><div class="line">    print(<span class="string">"-------开启新的线程----------"</span>)</div><div class="line">    <span class="keyword">try</span>:</div><div class="line">        data = client.recv(<span class="number">1024</span>)</div><div class="line">        <span class="keyword">if</span> len(data) &gt; <span class="number">0</span>:</div><div class="line">            fileName = get_request_name_from_http(data.decode(<span class="string">"utf-8"</span>))</div><div class="line">            writeHtml(client, fileName)</div><div class="line"></div><div class="line">    <span class="keyword">finally</span>:</div><div class="line">        client.close()</div><div class="line">        print(<span class="string">"-------关闭新的线程----------"</span>)</div></pre></td></tr></table></figure>
+<ul>
+<li>在这里的data就是我们读取到的http服务请求，当其长度等于0时代表客户端已经关闭了tcp连接。</li>
+<li>这里的get_request_name_from_http()需要我们解析出请求的静态资源</li>
+<li>这里的writeHtml()将静态文本写回到客户端。</li>
+</ul>
+</li>
+<li><p>在<strong>get_request_name_from_http</strong>函数中我们需要从原始的url请求中解析出http请求中我们需要的请求资源部分，这里我们可以通过正则表达式完成简单的完成解析。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_request_name_from_http</span><span class="params">(http)</span>:</span></div><div class="line">    <span class="comment"># 注意这里通过非贪婪模式匹配</span></div><div class="line">    r = re.search(<span class="string">r"GET /(.+?) "</span>, http)</div><div class="line">    fileName = <span class="string">""</span></div><div class="line">    <span class="keyword">if</span> r != <span class="keyword">None</span>:</div><div class="line">        fileName = r.group(<span class="number">1</span>)</div><div class="line">    <span class="keyword">return</span> fileName</div></pre></td></tr></table></figure>
+<ul>
+<li><p>请求的http大概格式是这样（当我们访问<a href="http://localhost:9876/html/index.html时）" target="_blank" rel="external">http://localhost:9876/html/index.html时）</a></p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">GET</span> <span class="string">/html/index.html</span> HTTP/1.1</div><div class="line"><span class="attribute">Host</span>: localhost:9876</div><div class="line"><span class="attribute">Connection</span>: keep-alive</div><div class="line"><span class="attribute">Cache-Control</span>: max-age=0</div><div class="line"><span class="attribute">Upgrade-Insecure-Requests</span>: 1</div><div class="line"><span class="attribute">User-Agent</span>: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.109 Safari/537.36</div></pre></td></tr></table></figure>
+<p>第一行就是我们请求的静态资源，我们将其通过非贪婪模式的正则表达式扣出来。</p>
+</li>
+</ul>
+</li>
+<li><p>在解析到请求的静态地址后就是简单的读取请求的文件，然后已http协议的格式返回回去就行了。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">writeHtml</span><span class="params">(client, fileName)</span>:</span></div><div class="line">    rspHead = <span class="keyword">None</span></div><div class="line">    rspBody = <span class="keyword">None</span></div><div class="line">    <span class="keyword">if</span> <span class="keyword">not</span> os.path.exists(fileName):</div><div class="line">        rspHead = <span class="string">"HTTP/1.1 404 error\r\nServer: foreverServer\r\n\r\n"</span></div><div class="line">        rspBody = <span class="string">"file not found"</span></div><div class="line">    <span class="keyword">else</span>:</div><div class="line">        rspHead = <span class="string">"HTTP/1.1 200 OK\r\nServer: foreverServer\r\n\r\n"</span></div><div class="line">        html = open(fileName, <span class="string">'r'</span>, encoding=<span class="string">'UTF-8'</span>)</div><div class="line">        rspBody = html.read()</div><div class="line">    client.send((rspHead + rspBody).encode(<span class="string">"utf-8"</span>))</div></pre></td></tr></table></figure>
+<ul>
+<li><p>当请求的静态文件不存在时，将返回给客户端文件不存在。</p>
+</li>
+<li><p>上面的相应格式是根据http相应报文的格式而定的，否则浏览器会不识别：</p>
+<p>​</p>
+<p><img src="http://img.blog.csdn.net/20170801215423998?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>在Windows中\r\n分别代表回车和换行，而现在在unix系统中\n就代表了回车换行。</p>
+<p>​</p>
+<h4 id="完整代码"><a href="#完整代码" class="headerlink" title="完整代码"></a>完整代码</h4></li>
+</ul>
+</li>
+</ol>
+<ul>
+<li><p>下面是完整的服务代码，不到60行就可以完成一个简单的静态web服务器，这就是python的魅力：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> socket <span class="keyword">import</span> *</div><div class="line"><span class="keyword">from</span> threading <span class="keyword">import</span> Thread</div><div class="line"><span class="keyword">import</span> os</div><div class="line"><span class="keyword">import</span> re</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_request_name_from_http</span><span class="params">(http)</span>:</span></div><div class="line">    r = re.search(<span class="string">r"GET /(.+?) "</span>, http)</div><div class="line">    fileName = <span class="string">""</span></div><div class="line">    <span class="keyword">if</span> r != <span class="keyword">None</span>:</div><div class="line">        fileName = r.group(<span class="number">1</span>)</div><div class="line">    <span class="keyword">return</span> fileName</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">writeHtml</span><span class="params">(client, fileName)</span>:</span></div><div class="line">    rspHead = <span class="keyword">None</span></div><div class="line">    rspBody = <span class="keyword">None</span></div><div class="line">    <span class="keyword">if</span> <span class="keyword">not</span> os.path.exists(fileName):</div><div class="line">        rspHead = <span class="string">"HTTP/1.1 404 error\r\nServer: foreverServer\r\n\r\n"</span></div><div class="line">        rspBody = <span class="string">"file not found"</span></div><div class="line">    <span class="keyword">else</span>:</div><div class="line">        rspHead = <span class="string">"HTTP/1.1 200 OK\r\nServer: foreverServer\r\n\r\n"</span></div><div class="line">        html = open(fileName, <span class="string">'r'</span>, encoding=<span class="string">'UTF-8'</span>)</div><div class="line">        rspBody = html.read()</div><div class="line">    client.send((rspHead + rspBody).encode(<span class="string">"utf-8"</span>))</div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">deal_socket</span><span class="params">(client)</span>:</span></div><div class="line">    print(<span class="string">"-------开启新的线程----------"</span>)</div><div class="line">    <span class="keyword">try</span>:</div><div class="line">        data = client.recv(<span class="number">1024</span>)</div><div class="line">        <span class="keyword">if</span> len(data) &gt; <span class="number">0</span>:</div><div class="line">            fileName = get_request_name_from_http(data.decode(<span class="string">"utf-8"</span>))</div><div class="line">            writeHtml(client, fileName)</div><div class="line"></div><div class="line">    <span class="keyword">finally</span>:</div><div class="line">        client.close()</div><div class="line">        print(<span class="string">"-------关闭新的线程----------"</span>)</div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></div><div class="line">    server = socket(AF_INET, SOCK_STREAM)</div><div class="line">    server.setsockopt(SOL_SOCKET, SO_REUSEADDR, <span class="number">1</span>)</div><div class="line">    address = (<span class="string">''</span>, <span class="number">9876</span>)</div><div class="line">    server.bind(address)</div><div class="line">    server.listen(<span class="number">10</span>)</div><div class="line">    <span class="keyword">try</span>:</div><div class="line">        <span class="keyword">while</span> <span class="keyword">True</span>:</div><div class="line">            print(<span class="string">"-------等待接受服务----------"</span>)</div><div class="line">            client, client_address = server.accept()</div><div class="line">            print(<span class="string">"-------接受服务成功----------"</span>)</div><div class="line">            <span class="comment"># 就这里和多线程不同，并且千万不能把client关掉</span></div><div class="line">            p = Thread(target=deal_socket, args=(client,))</div><div class="line">            p.start()</div><div class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</div><div class="line">        print(e)</div><div class="line">    <span class="keyword">finally</span>:</div><div class="line">        server.close()</div><div class="line">        print(<span class="string">"-------服务结束----------"</span>)</div><div class="line"></div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</div><div class="line">    main()</div></pre></td></tr></table></figure>
+</li>
+<li><p>到此就用python构建了史上最挫的静态wen服务器了，直接在浏览其输入静态html请求就可以显示网页了：</p>
+<p><img src="http://img.blog.csdn.net/20170801220650625?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>虽然很挫，不过web服务器的基本原理就是如此，牛逼的服务器也只是在这之上做了很多完善，下一篇我们将采用python提供的WSGI标准完成一个动态的web框架。</p>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/20/JVM/Jvm运行机制/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="帅到没朋友">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/07/20/JVM/Jvm运行机制/" itemprop="url">java运行时内存管理</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-20T20:10:33+08:00">
+                2017-07-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/jvm/" itemprop="url" rel="index">
+                    <span itemprop="name">jvm</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="java运行时内存管理"><a href="#java运行时内存管理" class="headerlink" title="java运行时内存管理"></a>java运行时内存管理</h1><ul>
+<li><p>Java运行时的数据区<br><img src="http://img.blog.csdn.net/20170418194309194?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+</li>
+<li><p>各个部分的数据简介</p>
+<ol>
+<li><p>程序计数器（<strong>线程私有</strong>）</p>
+<p>是一块较小的内存空间，它可以看作是当前线程所执行的字节码的行号指示器。字节码解释器工作时就是通过改变这个计数器的值来选取下一条需要执行的字节码指令，分支、循环、跳转、异常处理、线程恢复等基础功能都需要依赖这个计数器来完成。</p>
+</li>
+<li><p>Java虚拟机栈（线程私有，生命周期与线程相同）</p>
+<p>由一系列<code>栈帧</code>构成，用于存储<strong><em>局部变量表</em></strong>、操作数栈、动态链接、方法出口等信息。每一次的方法调用创建一个帧，并压栈。</p>
+</li>
+<li><p>本地方法栈</p>
+<p>本地方法栈（Native Method Stack）与虚拟机栈所发挥的作用是非常相似的。虚拟机栈为虚拟机执行Java方法（也就是字节码）服务，而本地方法栈则为虚拟机使用到的Native方法服务。</p>
+</li>
+<li><p>Java堆（与程序开发最密切）</p>
+<p>Java堆（Java Heap）是Java虚拟机所管理的内存中最大的一块。Java堆是被所有线程共享的一块内存区域，在虚拟机启动时创建。此内存区域的唯一目的就是存放对象实例</p>
+</li>
+<li><p>方法区（保存装载的类信息。）</p>
+<p>方法区（Method Area）与Java堆一样，是各个<strong>线程共享</strong>的内存区域，它用于存储已被虚拟机加载的类信息、常量、静态变量、即时编译器编译后的代码等数据。</p>
+</li>
+</ol>
+</li>
+<li><p>Java对象的创建过程</p>
+<p>虚拟机遇到一条new指令时，首先将去检查这个指令的参数是否能在常量池中定位到一个类的符号引用，并且检查这个符号引用代表的类是否已被加载、解析和初始化过。如果没有，那必须先执行相应的类加载过程，接下来虚拟机将为新生对象分配内存。</p>
+<p>举个栗子：下图是对下面执行代码的图解</p>
+<p><img src="http://img.blog.csdn.net/20170509170125021?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AppMain</span> </span>&#123;</div><div class="line">	<span class="comment">// 运行时, jvm 把appmain的信息都放入方法区 </span></div><div class="line">	<span class="function"><span class="keyword">public</span>   <span class="keyword">static</span>   <span class="keyword">void</span>  <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;</div><div class="line">	<span class="comment">//main 方法本身放入方法区。 </span></div><div class="line">	Sample test1 = <span class="keyword">new</span>  Sample( <span class="string">" 测试1 "</span> );  </div><div class="line">	<span class="comment">//test1是引用，所以放到栈区里， Sample是自定义对象应该放到堆里面 </span></div><div class="line">	test1.printName(); </div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>​</p>
+</li>
+<li><p>Jvm的内存模型（重点）</p>
+<p>–每一个线程有一个工作内存和主存独立</p>
+<p>–工作内存存放主存中变量的值的拷贝</p>
+<p><img src="http://img.blog.csdn.net/20170509205556297?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<blockquote>
+<ul>
+<li>当数据从主内存复制到工作存储时，必须出现两个动作：第一，由主内存执行的读（read）操作；第二，由工作内存执行的相应的load操作；</li>
+<li>当数据从工作内存拷贝到主内存时，也出现两个操作：第一个，由工作内存执行的存储（store）操作；第二，由主内存执行的相应的写（write）操作。</li>
+</ul>
+</blockquote>
+<p>每一个操作都具有原子性，不会中断。由于工作内存的存在，所以在另一个线程中的变量值被修改其他线程使用该变量时并不会得到最新的变量值，<strong><em>可以可以通过Volatile关键字使得在其他线程中立即可见。</em></strong></p>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/18/数据库/mysql/MySql的索引/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -629,178 +995,6 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/17/前端框架/node.js/node.js入门/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="forever_zs">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/head.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="帅到没朋友">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/07/17/前端框架/node.js/node.js入门/" itemprop="url">Node.js入门</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-17T00:00:00+08:00">
-                2017-07-17
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/node-js/" itemprop="url" rel="index">
-                    <span itemprop="name">node.js</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="Node-js入门"><a href="#Node-js入门" class="headerlink" title="Node.js入门"></a>Node.js入门</h2><p>[TOC]</p>
-<h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><p>​    简单来说，Node.js 就是运行在服务端的 JavaScript。是一个基于Chrome JavaScript 运行时建立的一个平台，是一个事件驱动I/O服务端JavaScript环境。</p>
-<h4 id="创建第一个服务器应用"><a href="#创建第一个服务器应用" class="headerlink" title="创建第一个服务器应用"></a>创建第一个服务器应用</h4><p>​    一般而言，创建一个node.js应用需要以下步骤：</p>
-<ol>
-<li><p><strong>引入 required 模块：</strong>我们可以使用 <strong>require</strong> 指令来载入 Node.js 模块。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> http=<span class="built_in">require</span>(<span class="string">"http"</span>);</div></pre></td></tr></table></figure>
-</li>
-<li><p><strong>创建服务器：</strong>服务器可以监听客户端的请求，类似于 Apache 、Nginx 等 HTTP 服务器。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">http.createServer(<span class="function"><span class="keyword">function</span> (<span class="params">request,response</span>)</span>&#123;</div><div class="line">    response.writeHead(<span class="number">200</span>,&#123;<span class="string">'content-type'</span>:<span class="string">'text/plain'</span>&#125;);</div><div class="line">    response.end(<span class="string">"hello world\n"</span>);</div><div class="line">&#125;).listen(<span class="number">8888</span>);</div></pre></td></tr></table></figure>
-</li>
-<li><p><strong>接收请求与响应请求</strong> 服务器很容易创建，客户端可以使用浏览器或终端发送 HTTP 请求，服务器接收请求后返回响应数据。</p>
-<p>在命令行中运行js文件。</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">node server.js</div></pre></td></tr></table></figure>
-<p>然后就相当于启动了一个web服务器，直接在浏览器中即可访问到接口。</p>
-<p><img src="http://img.blog.csdn.net/20170704164956727?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
-<p>​</p>
-</li>
-</ol>
-<h4 id="模块的基本概念"><a href="#模块的基本概念" class="headerlink" title="模块的基本概念"></a>模块的基本概念</h4><p>​    为了编写可维护的代码，我们把很多函数分组，分别放到不同的文件里，这样，每个文件包含的代码就相对较少，很多编程语言都采用这种组织代码的方式。在Node环境中，一个.js文件就称之为一个模块（module）。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="keyword">var</span> s = <span class="string">'Hello'</span>;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">greet</span>(<span class="params">name</span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(s + <span class="string">', '</span> + name + <span class="string">'!'</span>);</div><div class="line">&#125;</div><div class="line"><span class="comment">//把函数greet作为模块的输出暴露出去，这样其他模块就可以使用greet函数了。</span></div><div class="line"><span class="built_in">module</span>.exports = greet;</div></pre></td></tr></table></figure>
-<p>在其他js文件中通过以下办法引用模块</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="comment">// 引入hello模块:</span></div><div class="line"><span class="keyword">var</span> greet = <span class="built_in">require</span>(<span class="string">'./hello'</span>);</div><div class="line"></div><div class="line"><span class="keyword">var</span> s = <span class="string">'Michael'</span>;</div><div class="line"></div><div class="line">greet(s); <span class="comment">// Hello, Michael!d</span></div></pre></td></tr></table></figure>
-<p><strong>node查找模块的顺序依次为：内置模块、全局模块和当前模块;</strong></p>
-<p>​    </p>
-<h4 id="了解模块的原理"><a href="#了解模块的原理" class="headerlink" title="了解模块的原理"></a>了解模块的原理</h4><ul>
-<li><p>这种模块加载机制被称为CommonJS规范。在这个规范下，每个<code>.js</code>文件都是一个模块，它们内部各自使用的变量名和函数名都互不冲突。那么node是如何做到命名不冲突的呢？这里就需要使用到js的特性了。这里的 node<strong>将我们编写的js文件通过函数包裹起来，将其声明的全局变量都变成了局部变量</strong>。从未防止了命名冲突的问题。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//原本代码</span></div><div class="line"><span class="keyword">var</span> s = <span class="string">'Hello'</span>;</div><div class="line"><span class="keyword">var</span> name = <span class="string">'world'</span>;</div><div class="line"><span class="built_in">console</span>.log(s + <span class="string">' '</span> + name + <span class="string">'!'</span>);</div><div class="line"><span class="comment">//包装后的代码</span></div><div class="line">(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="comment">// 读取的hello.js代码:</span></div><div class="line">    <span class="keyword">var</span> s = <span class="string">'Hello'</span>;</div><div class="line">    <span class="keyword">var</span> name = <span class="string">'world'</span>;</div><div class="line"></div><div class="line">    <span class="built_in">console</span>.log(s + <span class="string">' '</span> + name + <span class="string">'!'</span>);</div><div class="line">    <span class="comment">// hello.js代码结束</span></div><div class="line">&#125;)();</div></pre></td></tr></table></figure>
-<p>通过这种方法从而实现了模块的隔离。</p>
-</li>
-<li><p>node是如何将模块暴露给其他js文件呢</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 准备module对象:</span></div><div class="line"><span class="keyword">var</span> <span class="built_in">module</span> = &#123;</div><div class="line">    <span class="attr">id</span>: <span class="string">'hello'</span>,</div><div class="line">    <span class="attr">exports</span>: &#123;&#125;</div><div class="line">&#125;;</div><div class="line"><span class="keyword">var</span> load = <span class="function"><span class="keyword">function</span> (<span class="params">module</span>) </span>&#123;</div><div class="line">    <span class="comment">// 读取的hello.js代码:</span></div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">greet</span>(<span class="params">name</span>) </span>&#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'Hello, '</span> + name + <span class="string">'!'</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="built_in">module</span>.exports = greet;</div><div class="line">    <span class="comment">// hello.js代码结束</span></div><div class="line">    <span class="keyword">return</span> <span class="built_in">module</span>.exports;</div><div class="line">&#125;;</div><div class="line"><span class="keyword">var</span> exported = load(<span class="built_in">module</span>);</div><div class="line"><span class="comment">// 保存module:</span></div><div class="line">save(<span class="built_in">module</span>, exported);</div></pre></td></tr></table></figure>
-<ol>
-<li>变量<code>module</code>是Node在加载js文件前准备的一个变量，并将其传入加载函数，我们在<code>hello.js</code>中可以直接使用变量<code>module</code>原因就在于它实际上是函数的一个参数：</li>
-<li>通过把参数<code>module</code>传递给<code>load()</code>函数，<code>hello.js</code>就顺利地把一个变量传递给了Node执行环境，Node会把<code>module</code>变量保存到某个地方。</li>
-<li>由于Node保存了所有导入的<code>module</code>，当我们用<code>require()</code>获取module时，Node找到对应的<code>module</code>，把这个<code>module</code>的<code>exports</code>变量返回，</li>
-</ol>
-<p>​</p>
-</li>
-</ul>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/17/前端框架/node.js/node中的基本模块/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -948,6 +1142,178 @@
 <figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="comment">// 导入http模块:</span></div><div class="line"><span class="keyword">var</span> http = <span class="built_in">require</span>(<span class="string">'http'</span>);</div><div class="line"></div><div class="line"><span class="comment">// 创建http server，并传入回调函数:</span></div><div class="line"><span class="keyword">var</span> server = http.createServer(<span class="function"><span class="keyword">function</span> (<span class="params">request, response</span>) </span>&#123;</div><div class="line">    <span class="comment">// 回调函数接收request和response对象,</span></div><div class="line">    <span class="comment">// 获得HTTP请求的method和url:</span></div><div class="line">    <span class="built_in">console</span>.log(request.method + <span class="string">': '</span> + request.url);</div><div class="line">    <span class="comment">// 将HTTP响应200写入response, 同时设置Content-Type: text/html:</span></div><div class="line">    response.writeHead(<span class="number">200</span>, &#123;<span class="string">'Content-Type'</span>: <span class="string">'text/html'</span>&#125;);</div><div class="line">    <span class="comment">// 将HTTP响应的HTML内容写入response:</span></div><div class="line">    response.end(<span class="string">'&lt;h1&gt;Hello world!&lt;/h1&gt;'</span>);</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="comment">// 让服务器监听8080端口:</span></div><div class="line">server.listen(<span class="number">8080</span>);</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log(<span class="string">'Server is running at http://127.0.0.1:8080/'</span>);</div></pre></td></tr></table></figure>
 <p>​</p>
 </li>
+</ol>
+<p>​</p>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/17/前端框架/node.js/node.js入门/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="帅到没朋友">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/07/17/前端框架/node.js/node.js入门/" itemprop="url">Node.js入门</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-17T00:00:00+08:00">
+                2017-07-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/node-js/" itemprop="url" rel="index">
+                    <span itemprop="name">node.js</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="Node-js入门"><a href="#Node-js入门" class="headerlink" title="Node.js入门"></a>Node.js入门</h2><p>[TOC]</p>
+<h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><p>​    简单来说，Node.js 就是运行在服务端的 JavaScript。是一个基于Chrome JavaScript 运行时建立的一个平台，是一个事件驱动I/O服务端JavaScript环境。</p>
+<h4 id="创建第一个服务器应用"><a href="#创建第一个服务器应用" class="headerlink" title="创建第一个服务器应用"></a>创建第一个服务器应用</h4><p>​    一般而言，创建一个node.js应用需要以下步骤：</p>
+<ol>
+<li><p><strong>引入 required 模块：</strong>我们可以使用 <strong>require</strong> 指令来载入 Node.js 模块。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> http=<span class="built_in">require</span>(<span class="string">"http"</span>);</div></pre></td></tr></table></figure>
+</li>
+<li><p><strong>创建服务器：</strong>服务器可以监听客户端的请求，类似于 Apache 、Nginx 等 HTTP 服务器。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">http.createServer(<span class="function"><span class="keyword">function</span> (<span class="params">request,response</span>)</span>&#123;</div><div class="line">    response.writeHead(<span class="number">200</span>,&#123;<span class="string">'content-type'</span>:<span class="string">'text/plain'</span>&#125;);</div><div class="line">    response.end(<span class="string">"hello world\n"</span>);</div><div class="line">&#125;).listen(<span class="number">8888</span>);</div></pre></td></tr></table></figure>
+</li>
+<li><p><strong>接收请求与响应请求</strong> 服务器很容易创建，客户端可以使用浏览器或终端发送 HTTP 请求，服务器接收请求后返回响应数据。</p>
+<p>在命令行中运行js文件。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">node server.js</div></pre></td></tr></table></figure>
+<p>然后就相当于启动了一个web服务器，直接在浏览器中即可访问到接口。</p>
+<p><img src="http://img.blog.csdn.net/20170704164956727?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>​</p>
+</li>
+</ol>
+<h4 id="模块的基本概念"><a href="#模块的基本概念" class="headerlink" title="模块的基本概念"></a>模块的基本概念</h4><p>​    为了编写可维护的代码，我们把很多函数分组，分别放到不同的文件里，这样，每个文件包含的代码就相对较少，很多编程语言都采用这种组织代码的方式。在Node环境中，一个.js文件就称之为一个模块（module）。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="keyword">var</span> s = <span class="string">'Hello'</span>;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">greet</span>(<span class="params">name</span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(s + <span class="string">', '</span> + name + <span class="string">'!'</span>);</div><div class="line">&#125;</div><div class="line"><span class="comment">//把函数greet作为模块的输出暴露出去，这样其他模块就可以使用greet函数了。</span></div><div class="line"><span class="built_in">module</span>.exports = greet;</div></pre></td></tr></table></figure>
+<p>在其他js文件中通过以下办法引用模块</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="comment">// 引入hello模块:</span></div><div class="line"><span class="keyword">var</span> greet = <span class="built_in">require</span>(<span class="string">'./hello'</span>);</div><div class="line"></div><div class="line"><span class="keyword">var</span> s = <span class="string">'Michael'</span>;</div><div class="line"></div><div class="line">greet(s); <span class="comment">// Hello, Michael!d</span></div></pre></td></tr></table></figure>
+<p><strong>node查找模块的顺序依次为：内置模块、全局模块和当前模块;</strong></p>
+<p>​    </p>
+<h4 id="了解模块的原理"><a href="#了解模块的原理" class="headerlink" title="了解模块的原理"></a>了解模块的原理</h4><ul>
+<li><p>这种模块加载机制被称为CommonJS规范。在这个规范下，每个<code>.js</code>文件都是一个模块，它们内部各自使用的变量名和函数名都互不冲突。那么node是如何做到命名不冲突的呢？这里就需要使用到js的特性了。这里的 node<strong>将我们编写的js文件通过函数包裹起来，将其声明的全局变量都变成了局部变量</strong>。从未防止了命名冲突的问题。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//原本代码</span></div><div class="line"><span class="keyword">var</span> s = <span class="string">'Hello'</span>;</div><div class="line"><span class="keyword">var</span> name = <span class="string">'world'</span>;</div><div class="line"><span class="built_in">console</span>.log(s + <span class="string">' '</span> + name + <span class="string">'!'</span>);</div><div class="line"><span class="comment">//包装后的代码</span></div><div class="line">(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="comment">// 读取的hello.js代码:</span></div><div class="line">    <span class="keyword">var</span> s = <span class="string">'Hello'</span>;</div><div class="line">    <span class="keyword">var</span> name = <span class="string">'world'</span>;</div><div class="line"></div><div class="line">    <span class="built_in">console</span>.log(s + <span class="string">' '</span> + name + <span class="string">'!'</span>);</div><div class="line">    <span class="comment">// hello.js代码结束</span></div><div class="line">&#125;)();</div></pre></td></tr></table></figure>
+<p>通过这种方法从而实现了模块的隔离。</p>
+</li>
+<li><p>node是如何将模块暴露给其他js文件呢</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 准备module对象:</span></div><div class="line"><span class="keyword">var</span> <span class="built_in">module</span> = &#123;</div><div class="line">    <span class="attr">id</span>: <span class="string">'hello'</span>,</div><div class="line">    <span class="attr">exports</span>: &#123;&#125;</div><div class="line">&#125;;</div><div class="line"><span class="keyword">var</span> load = <span class="function"><span class="keyword">function</span> (<span class="params">module</span>) </span>&#123;</div><div class="line">    <span class="comment">// 读取的hello.js代码:</span></div><div class="line">    <span class="function"><span class="keyword">function</span> <span class="title">greet</span>(<span class="params">name</span>) </span>&#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'Hello, '</span> + name + <span class="string">'!'</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="built_in">module</span>.exports = greet;</div><div class="line">    <span class="comment">// hello.js代码结束</span></div><div class="line">    <span class="keyword">return</span> <span class="built_in">module</span>.exports;</div><div class="line">&#125;;</div><div class="line"><span class="keyword">var</span> exported = load(<span class="built_in">module</span>);</div><div class="line"><span class="comment">// 保存module:</span></div><div class="line">save(<span class="built_in">module</span>, exported);</div></pre></td></tr></table></figure>
+<ol>
+<li>变量<code>module</code>是Node在加载js文件前准备的一个变量，并将其传入加载函数，我们在<code>hello.js</code>中可以直接使用变量<code>module</code>原因就在于它实际上是函数的一个参数：</li>
+<li>通过把参数<code>module</code>传递给<code>load()</code>函数，<code>hello.js</code>就顺利地把一个变量传递给了Node执行环境，Node会把<code>module</code>变量保存到某个地方。</li>
+<li>由于Node保存了所有导入的<code>module</code>，当我们用<code>require()</code>获取module时，Node找到对应的<code>module</code>，把这个<code>module</code>的<code>exports</code>变量返回，</li>
 </ol>
 <p>​</p>
 </li>
@@ -1666,298 +2032,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/11/前端框架/JQuery/JQuery的扩展/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="forever_zs">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/head.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="帅到没朋友">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/07/11/前端框架/JQuery/JQuery的扩展/" itemprop="url">JQuery的扩展</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-11T20:00:00+08:00">
-                2017-07-11
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/jquery/" itemprop="url" rel="index">
-                    <span itemprop="name">jquery</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="JQuery的扩展"><a href="#JQuery的扩展" class="headerlink" title="JQuery的扩展"></a>JQuery的扩展</h2><p>[TOC]</p>
-<ol>
-<li><p>给jQuery对象绑定一个新方法是通过扩展<code>$.fn</code>对象</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">$.fn.hello() = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="comment">// this已绑定为当前jQuery对象:</span></div><div class="line">    <span class="keyword">this</span>.css(<span class="string">'backgroundColor'</span>, <span class="string">'#fffceb'</span>).css(<span class="string">'color'</span>, <span class="string">'#d85030'</span>);</div><div class="line">    <span class="keyword">return</span> <span class="keyword">this</span>;</div><div class="line">&#125;</div><div class="line"><span class="comment">//函数内部的this在调用时被绑定为jQuery对象，所以函数内部代码可以正常调用所有jQuery对象的方法。</span></div></pre></td></tr></table></figure>
-<p>返回的时候仍然要返回this，保证返回的对象仍然支持链式调用。</p>
-</li>
-<li><p>同时我们可以给我们自定义的函数增加参数</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">$.fn.highlight2 = <span class="function"><span class="keyword">function</span> (<span class="params">options</span>) </span>&#123;</div><div class="line">    <span class="comment">// 要考虑到各种情况:</span></div><div class="line">    <span class="comment">// options为undefined</span></div><div class="line">    <span class="comment">// options只有部分key</span></div><div class="line">    <span class="keyword">var</span> bgcolor = options &amp;&amp; options.backgroundColor || <span class="string">'#fffceb'</span>;</div><div class="line">    <span class="keyword">var</span> color = options &amp;&amp; options.color || <span class="string">'#d85030'</span>;</div><div class="line">    <span class="keyword">this</span>.css(<span class="string">'backgroundColor'</span>, bgcolor).css(<span class="string">'color'</span>, color);</div><div class="line">    <span class="keyword">return</span> <span class="keyword">this</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>当然这种考虑各种情况实在有些麻烦，所以JQuery为我们提供了更好的办法</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 把默认值和用户传入的options合并到对象&#123;&#125;中并返回:</span></div><div class="line"><span class="keyword">var</span> opts = $.extend(&#123;&#125;, &#123;</div><div class="line">    <span class="attr">backgroundColor</span>: <span class="string">'#00a8e6'</span>,</div><div class="line">    <span class="attr">color</span>: <span class="string">'#ffffff'</span></div><div class="line">&#125;, options);</div><div class="line"><span class="comment">//它把多个object对象的属性合并到第一个target对象中，遇到同名属性，总是使用靠后的对象的值，也就是越往后优先级越高</span></div><div class="line"></div><div class="line">$.fn.highlight = <span class="function"><span class="keyword">function</span> (<span class="params">options</span>) </span>&#123;</div><div class="line">    <span class="comment">// 合并默认值和用户设定值:</span></div><div class="line">    <span class="keyword">var</span> opts = $.extend(&#123;&#125;, $.fn.highlight.defaults, options);</div><div class="line">    <span class="keyword">this</span>.css(<span class="string">'backgroundColor'</span>, opts.backgroundColor).css(<span class="string">'color'</span>, opts.color);</div><div class="line">    <span class="keyword">return</span> <span class="keyword">this</span>;</div><div class="line">&#125;</div><div class="line"><span class="comment">// 设定默认值:</span></div><div class="line">$.fn.highlight.defaults = &#123;</div><div class="line">    <span class="attr">color</span>: <span class="string">'#d85030'</span>,</div><div class="line">    <span class="attr">backgroundColor</span>: <span class="string">'#fff8de'</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>​</p>
-</li>
-</ol>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/10/前端框架/JQuery/JQuery的Ajax/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="forever_zs">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/head.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="帅到没朋友">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/07/10/前端框架/JQuery/JQuery的Ajax/" itemprop="url">JQuery的ajax</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-10T20:10:33+08:00">
-                2017-07-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/jquery/" itemprop="url" rel="index">
-                    <span itemprop="name">jquery</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="JQuery的ajax"><a href="#JQuery的ajax" class="headerlink" title="JQuery的ajax"></a>JQuery的ajax</h2><p>[TOC]</p>
-<ul>
-<li><p>jQuery在全局对象<code>jQuery</code>（也就是<code>$</code>）绑定了<code>ajax()</code>函数，可以处理AJAX请求。<code>ajax(url, settings)</code>函数需要接收一个URL和一个可选的<code>settings</code>对象，</p>
-</li>
-<li><p>Get请求</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> jqxhr = $.get(<span class="string">'/path/to/resource'</span>, &#123;</div><div class="line">    <span class="attr">name</span>: <span class="string">'Bob Lee'</span>,</div><div class="line">    <span class="attr">check</span>: <span class="number">1</span></div><div class="line">&#125;);</div><div class="line"><span class="comment">//第二个参数代表了请求参数,直接被加到请求url后面</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>POST请求（传入的第二个参数默认被序列化为<code>application/x-www-form-urlencoded</code>：）</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> jqxhr = $.post(<span class="string">'/path/to/resource'</span>, &#123;</div><div class="line">    <span class="attr">name</span>: <span class="string">'Bob Lee'</span>,</div><div class="line">    <span class="attr">check</span>: <span class="number">1</span></div><div class="line">&#125;);</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">* 直接获取json获取</div><div class="line"></div><div class="line">  ```javascript</div><div class="line">  var jqxhr = $.getJSON(&apos;/path/to/resource&apos;, &#123;</div><div class="line">      name: &apos;Bob Lee&apos;,</div><div class="line">      check: 1</div><div class="line">  &#125;).done(function (data) &#123;</div><div class="line">      // data已经被解析为JSON对象了</div><div class="line">  &#125;).fail(function (xhr, status) &#123;</div><div class="line">      ajaxLog(&apos;失败: &apos; + xhr.status + &apos;, 原因: &apos; + status);</div><div class="line">  &#125;).always(function () &#123;</div><div class="line">      ajaxLog(&apos;请求完成: 无论成功或失败都会调用&apos;);</div><div class="line">  &#125;);;</div></pre></td></tr></table></figure>
-<p>​</p>
-</li>
-</ul>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -2007,7 +2081,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">16</span>
+                <span class="site-state-item-count">18</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -2018,7 +2092,7 @@
             
             <div class="site-state-item site-state-categories">
               
-                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-count">9</span>
                 <span class="site-state-item-name">分类</span>
               
             </div>
@@ -2029,7 +2103,7 @@
             
             <div class="site-state-item site-state-tags">
               
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">28</span>
                 <span class="site-state-item-name">标签</span>
               
             </div>

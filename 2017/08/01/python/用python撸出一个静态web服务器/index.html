@@ -1,0 +1,846 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="web服务器,socket服务," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.1" />
+
+
+
+
+
+
+<meta name="description" content="python搭建简单的静态web服务器[TOC] 储备知识 一丢丢的python（io和多线程的知识） 一丢丢的http协议 一丢丢的tcp/ip协议（当然不了解也没关系） 一丢丢的正则表达式知识  web服务器基本原理 当在浏览器的地址栏输入一个ip与端口之后，浏览器就会通过tcp/ip协议与相应的主机端口进程建立联系。经历过三次握手之后就会将http请求发送到相应的服务器进程去，之前我们了解的">
+<meta name="keywords" content="web服务器,socket服务">
+<meta property="og:type" content="article">
+<meta property="og:title" content="python构建简单的静态web服务器">
+<meta property="og:url" content="http://yoursite.com/2017/08/01/python/用python撸出一个静态web服务器/index.html">
+<meta property="og:site_name" content="帅到没朋友">
+<meta property="og:description" content="python搭建简单的静态web服务器[TOC] 储备知识 一丢丢的python（io和多线程的知识） 一丢丢的http协议 一丢丢的tcp/ip协议（当然不了解也没关系） 一丢丢的正则表达式知识  web服务器基本原理 当在浏览器的地址栏输入一个ip与端口之后，浏览器就会通过tcp/ip协议与相应的主机端口进程建立联系。经历过三次握手之后就会将http请求发送到相应的服务器进程去，之前我们了解的">
+<meta property="og:image" content="http://img.blog.csdn.net/20170801212433632?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="http://img.blog.csdn.net/20170801215423998?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="http://img.blog.csdn.net/20170801220650625?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:updated_time" content="2017-08-01T14:14:06.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="python构建简单的静态web服务器">
+<meta name="twitter:description" content="python搭建简单的静态web服务器[TOC] 储备知识 一丢丢的python（io和多线程的知识） 一丢丢的http协议 一丢丢的tcp/ip协议（当然不了解也没关系） 一丢丢的正则表达式知识  web服务器基本原理 当在浏览器的地址栏输入一个ip与端口之后，浏览器就会通过tcp/ip协议与相应的主机端口进程建立联系。经历过三次握手之后就会将http请求发送到相应的服务器进程去，之前我们了解的">
+<meta name="twitter:image" content="http://img.blog.csdn.net/20170801212433632?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/08/01/python/用python撸出一个静态web服务器/"/>
+
+
+
+
+
+  <title>python构建简单的静态web服务器 | 帅到没朋友</title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">帅到没朋友</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/08/01/python/用python撸出一个静态web服务器/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="帅到没朋友">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">python构建简单的静态web服务器</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-01T20:10:33+08:00">
+                2017-08-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/python进阶/" itemprop="url" rel="index">
+                    <span itemprop="name">python进阶</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="python搭建简单的静态web服务器"><a href="#python搭建简单的静态web服务器" class="headerlink" title="python搭建简单的静态web服务器"></a>python搭建简单的静态web服务器</h2><p>[TOC]</p>
+<h4 id="储备知识"><a href="#储备知识" class="headerlink" title="储备知识"></a>储备知识</h4><ul>
+<li>一丢丢的python（io和多线程的知识）</li>
+<li>一丢丢的http协议</li>
+<li>一丢丢的tcp/ip协议（当然不了解也没关系）</li>
+<li>一丢丢的正则表达式知识</li>
+</ul>
+<h4 id="web服务器基本原理"><a href="#web服务器基本原理" class="headerlink" title="web服务器基本原理"></a>web服务器基本原理</h4><ul>
+<li><p>当在浏览器的地址栏输入一个ip与端口之后，浏览器就会通过tcp/ip协议与相应的主机端口进程建立联系。经历过三次握手之后就会将http请求发送到相应的服务器进程去，之前我们了解的http协议在服务进程收到的其实就是一串有特殊格式的字符串。</p>
+<p>当我们浏览器输入<a href="localhost:9876" target="_blank" rel="external">localhost:9876</a> 后服务进程实际收到的如下：</p>
+<p><img src="http://img.blog.csdn.net/20170801212433632?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+</li>
+</ul>
+<h4 id="大致流程"><a href="#大致流程" class="headerlink" title="大致流程"></a>大致流程</h4><ol>
+<li><p>在服务端建立tcp服务进程，为了保证服务端可以同时处理多个请求，我们需要在每接受一个请求后为其单独使用一个线程（或者进程）为其进行服务。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">server = socket(AF_INET, SOCK_STREAM)</div><div class="line">server.setsockopt(SOL_SOCKET, SO_REUSEADDR, <span class="number">1</span>)</div><div class="line">address = (<span class="string">''</span>, <span class="number">9876</span>)</div><div class="line">server.bind(address)</div><div class="line">server.listen(<span class="number">10</span>)</div><div class="line"><span class="keyword">try</span>:</div><div class="line">    <span class="keyword">while</span> <span class="keyword">True</span>:</div><div class="line">        print(<span class="string">"-------等待接受服务----------"</span>)</div><div class="line">        client, client_address = server.accept()</div><div class="line">        print(<span class="string">"-------接受服务成功----------"</span>)</div><div class="line">        <span class="comment"># 如果使用进程服务，可以在在后面把client关闭。</span></div><div class="line">        p = Thread(target=deal_socket, args=(client,))</div><div class="line">        p.start()</div><div class="line"><span class="keyword">except</span> Exception <span class="keyword">as</span> e:</div><div class="line">       print(e)</div><div class="line"><span class="keyword">finally</span>:</div><div class="line">       server.close()</div><div class="line">       print(<span class="string">"-------服务结束----------"</span>)</div></pre></td></tr></table></figure>
+<p>这里的deal_socket函数就是我们为一个请求服务的函数，在一个单独的线程中运行。</p>
+</li>
+<li><p>在处理url请求的函数中，我们需要读取出客户端的http请求。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">deal_socket</span><span class="params">(client)</span>:</span></div><div class="line">    print(<span class="string">"-------开启新的线程----------"</span>)</div><div class="line">    <span class="keyword">try</span>:</div><div class="line">        data = client.recv(<span class="number">1024</span>)</div><div class="line">        <span class="keyword">if</span> len(data) &gt; <span class="number">0</span>:</div><div class="line">            fileName = get_request_name_from_http(data.decode(<span class="string">"utf-8"</span>))</div><div class="line">            writeHtml(client, fileName)</div><div class="line"></div><div class="line">    <span class="keyword">finally</span>:</div><div class="line">        client.close()</div><div class="line">        print(<span class="string">"-------关闭新的线程----------"</span>)</div></pre></td></tr></table></figure>
+<ul>
+<li>在这里的data就是我们读取到的http服务请求，当其长度等于0时代表客户端已经关闭了tcp连接。</li>
+<li>这里的get_request_name_from_http()需要我们解析出请求的静态资源</li>
+<li>这里的writeHtml()将静态文本写回到客户端。</li>
+</ul>
+</li>
+<li><p>在<strong>get_request_name_from_http</strong>函数中我们需要从原始的url请求中解析出http请求中我们需要的请求资源部分，这里我们可以通过正则表达式完成简单的完成解析。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_request_name_from_http</span><span class="params">(http)</span>:</span></div><div class="line">    <span class="comment"># 注意这里通过非贪婪模式匹配</span></div><div class="line">    r = re.search(<span class="string">r"GET /(.+?) "</span>, http)</div><div class="line">    fileName = <span class="string">""</span></div><div class="line">    <span class="keyword">if</span> r != <span class="keyword">None</span>:</div><div class="line">        fileName = r.group(<span class="number">1</span>)</div><div class="line">    <span class="keyword">return</span> fileName</div></pre></td></tr></table></figure>
+<ul>
+<li><p>请求的http大概格式是这样（当我们访问<a href="http://localhost:9876/html/index.html时）" target="_blank" rel="external">http://localhost:9876/html/index.html时）</a></p>
+<figure class="highlight http"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">GET</span> <span class="string">/html/index.html</span> HTTP/1.1</div><div class="line"><span class="attribute">Host</span>: localhost:9876</div><div class="line"><span class="attribute">Connection</span>: keep-alive</div><div class="line"><span class="attribute">Cache-Control</span>: max-age=0</div><div class="line"><span class="attribute">Upgrade-Insecure-Requests</span>: 1</div><div class="line"><span class="attribute">User-Agent</span>: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.109 Safari/537.36</div></pre></td></tr></table></figure>
+<p>第一行就是我们请求的静态资源，我们将其通过非贪婪模式的正则表达式扣出来。</p>
+</li>
+</ul>
+</li>
+<li><p>在解析到请求的静态地址后就是简单的读取请求的文件，然后已http协议的格式返回回去就行了。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">writeHtml</span><span class="params">(client, fileName)</span>:</span></div><div class="line">    rspHead = <span class="keyword">None</span></div><div class="line">    rspBody = <span class="keyword">None</span></div><div class="line">    <span class="keyword">if</span> <span class="keyword">not</span> os.path.exists(fileName):</div><div class="line">        rspHead = <span class="string">"HTTP/1.1 404 error\r\nServer: foreverServer\r\n\r\n"</span></div><div class="line">        rspBody = <span class="string">"file not found"</span></div><div class="line">    <span class="keyword">else</span>:</div><div class="line">        rspHead = <span class="string">"HTTP/1.1 200 OK\r\nServer: foreverServer\r\n\r\n"</span></div><div class="line">        html = open(fileName, <span class="string">'r'</span>, encoding=<span class="string">'UTF-8'</span>)</div><div class="line">        rspBody = html.read()</div><div class="line">    client.send((rspHead + rspBody).encode(<span class="string">"utf-8"</span>))</div></pre></td></tr></table></figure>
+<ul>
+<li><p>当请求的静态文件不存在时，将返回给客户端文件不存在。</p>
+</li>
+<li><p>上面的相应格式是根据http相应报文的格式而定的，否则浏览器会不识别：</p>
+<p>​</p>
+<p><img src="http://img.blog.csdn.net/20170801215423998?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>在Windows中\r\n分别代表回车和换行，而现在在unix系统中\n就代表了回车换行。</p>
+<p>​</p>
+<h4 id="完整代码"><a href="#完整代码" class="headerlink" title="完整代码"></a>完整代码</h4></li>
+</ul>
+</li>
+</ol>
+<ul>
+<li><p>下面是完整的服务代码，不到60行就可以完成一个简单的静态web服务器，这就是python的魅力：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">from</span> socket <span class="keyword">import</span> *</div><div class="line"><span class="keyword">from</span> threading <span class="keyword">import</span> Thread</div><div class="line"><span class="keyword">import</span> os</div><div class="line"><span class="keyword">import</span> re</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">get_request_name_from_http</span><span class="params">(http)</span>:</span></div><div class="line">    r = re.search(<span class="string">r"GET /(.+?) "</span>, http)</div><div class="line">    fileName = <span class="string">""</span></div><div class="line">    <span class="keyword">if</span> r != <span class="keyword">None</span>:</div><div class="line">        fileName = r.group(<span class="number">1</span>)</div><div class="line">    <span class="keyword">return</span> fileName</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">writeHtml</span><span class="params">(client, fileName)</span>:</span></div><div class="line">    rspHead = <span class="keyword">None</span></div><div class="line">    rspBody = <span class="keyword">None</span></div><div class="line">    <span class="keyword">if</span> <span class="keyword">not</span> os.path.exists(fileName):</div><div class="line">        rspHead = <span class="string">"HTTP/1.1 404 error\r\nServer: foreverServer\r\n\r\n"</span></div><div class="line">        rspBody = <span class="string">"file not found"</span></div><div class="line">    <span class="keyword">else</span>:</div><div class="line">        rspHead = <span class="string">"HTTP/1.1 200 OK\r\nServer: foreverServer\r\n\r\n"</span></div><div class="line">        html = open(fileName, <span class="string">'r'</span>, encoding=<span class="string">'UTF-8'</span>)</div><div class="line">        rspBody = html.read()</div><div class="line">    client.send((rspHead + rspBody).encode(<span class="string">"utf-8"</span>))</div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">deal_socket</span><span class="params">(client)</span>:</span></div><div class="line">    print(<span class="string">"-------开启新的线程----------"</span>)</div><div class="line">    <span class="keyword">try</span>:</div><div class="line">        data = client.recv(<span class="number">1024</span>)</div><div class="line">        <span class="keyword">if</span> len(data) &gt; <span class="number">0</span>:</div><div class="line">            fileName = get_request_name_from_http(data.decode(<span class="string">"utf-8"</span>))</div><div class="line">            writeHtml(client, fileName)</div><div class="line"></div><div class="line">    <span class="keyword">finally</span>:</div><div class="line">        client.close()</div><div class="line">        print(<span class="string">"-------关闭新的线程----------"</span>)</div><div class="line"></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></div><div class="line">    server = socket(AF_INET, SOCK_STREAM)</div><div class="line">    server.setsockopt(SOL_SOCKET, SO_REUSEADDR, <span class="number">1</span>)</div><div class="line">    address = (<span class="string">''</span>, <span class="number">9876</span>)</div><div class="line">    server.bind(address)</div><div class="line">    server.listen(<span class="number">10</span>)</div><div class="line">    <span class="keyword">try</span>:</div><div class="line">        <span class="keyword">while</span> <span class="keyword">True</span>:</div><div class="line">            print(<span class="string">"-------等待接受服务----------"</span>)</div><div class="line">            client, client_address = server.accept()</div><div class="line">            print(<span class="string">"-------接受服务成功----------"</span>)</div><div class="line">            <span class="comment"># 就这里和多线程不同，并且千万不能把client关掉</span></div><div class="line">            p = Thread(target=deal_socket, args=(client,))</div><div class="line">            p.start()</div><div class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</div><div class="line">        print(e)</div><div class="line">    <span class="keyword">finally</span>:</div><div class="line">        server.close()</div><div class="line">        print(<span class="string">"-------服务结束----------"</span>)</div><div class="line"></div><div class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</div><div class="line">    main()</div></pre></td></tr></table></figure>
+</li>
+<li><p>到此就用python构建了史上最挫的静态wen服务器了，直接在浏览其输入静态html请求就可以显示网页了：</p>
+<p><img src="http://img.blog.csdn.net/20170801220650625?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>虽然很挫，不过web服务器的基本原理就是如此，牛逼的服务器也只是在这之上做了很多完善，下一篇我们将采用python提供的WSGI标准完成一个动态的web框架。</p>
+</li>
+</ul>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/web服务器/" rel="tag"># web服务器</a>
+          
+            <a href="/tags/socket服务/" rel="tag"># socket服务</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/07/20/JVM/Jvm运行机制/" rel="next" title="java运行时内存管理">
+                <i class="fa fa-chevron-left"></i> java运行时内存管理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/head.jpg"
+               alt="forever_zs" />
+          <p class="site-author-name" itemprop="name">forever_zs</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">18</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">9</span>
+                <span class="site-state-item-name">分类</span>
+              
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              
+                <span class="site-state-item-count">28</span>
+                <span class="site-state-item-name">标签</span>
+              
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/forever-zs" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://twitter.com/your-user-name" target="_blank" title="Twitter">
+                  
+                    <i class="fa fa-fw fa-twitter"></i>
+                  
+                  Twitter
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/forever_zs_forever" target="_blank" title="微博">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  微博
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://douban.com/people/your-user-name" target="_blank" title="豆瓣">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  豆瓣
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://www.zhihu.com/people/your-user-name" target="_blank" title="知乎">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  知乎
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#python搭建简单的静态web服务器"><span class="nav-number">1.</span> <span class="nav-text">python搭建简单的静态web服务器</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#储备知识"><span class="nav-number">1.0.1.</span> <span class="nav-text">储备知识</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#web服务器基本原理"><span class="nav-number">1.0.2.</span> <span class="nav-text">web服务器基本原理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#大致流程"><span class="nav-number">1.0.3.</span> <span class="nav-text">大致流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#完整代码"><span class="nav-number">1.0.4.</span> <span class="nav-text">完整代码</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">forever_zs</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
