@@ -1,0 +1,818 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="zookeeper,分布式服务," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.1" />
+
+
+
+
+
+
+<meta name="description" content="通过zookeeper完成动态感知分布式服务器上下线的功能[TOC] 业务描述 某分布式系统中，主节点可以有多台，可以动态上下线，任意一台客户端都能实时感知到主节点服务器的上下线。当主节点下线的时候，客户端会收到通知，并更新目前在还在线的主节点host信息，可以防止客户端向已经挂掉的节点进行请求。  服务器端的实现 要想完成上述功能，在我们可以想到通过zookeeper的短暂态的节点完成，在服务器">
+<meta name="keywords" content="zookeeper,分布式服务">
+<meta property="og:type" content="article">
+<meta property="og:title" content="通过zookeeper完成动态分布式服务器务器上下线的功能">
+<meta property="og:url" content="http://yoursite.com/2017/08/06/zookeeper/动态感知服务器上下线/index.html">
+<meta property="og:site_name" content="帅到没朋友">
+<meta property="og:description" content="通过zookeeper完成动态感知分布式服务器上下线的功能[TOC] 业务描述 某分布式系统中，主节点可以有多台，可以动态上下线，任意一台客户端都能实时感知到主节点服务器的上下线。当主节点下线的时候，客户端会收到通知，并更新目前在还在线的主节点host信息，可以防止客户端向已经挂掉的节点进行请求。  服务器端的实现 要想完成上述功能，在我们可以想到通过zookeeper的短暂态的节点完成，在服务器">
+<meta property="og:image" content="http://img.blog.csdn.net/20170806173020943?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:updated_time" content="2017-08-06T09:38:58.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="通过zookeeper完成动态分布式服务器务器上下线的功能">
+<meta name="twitter:description" content="通过zookeeper完成动态感知分布式服务器上下线的功能[TOC] 业务描述 某分布式系统中，主节点可以有多台，可以动态上下线，任意一台客户端都能实时感知到主节点服务器的上下线。当主节点下线的时候，客户端会收到通知，并更新目前在还在线的主节点host信息，可以防止客户端向已经挂掉的节点进行请求。  服务器端的实现 要想完成上述功能，在我们可以想到通过zookeeper的短暂态的节点完成，在服务器">
+<meta name="twitter:image" content="http://img.blog.csdn.net/20170806173020943?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/08/06/zookeeper/动态感知服务器上下线/"/>
+
+
+
+
+
+  <title>通过zookeeper完成动态分布式服务器务器上下线的功能 | 帅到没朋友</title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">帅到没朋友</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/08/06/zookeeper/动态感知服务器上下线/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="帅到没朋友">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">通过zookeeper完成动态分布式服务器务器上下线的功能</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-06T09:10:33+08:00">
+                2017-08-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/zookeeper/" itemprop="url" rel="index">
+                    <span itemprop="name">zookeeper</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="通过zookeeper完成动态感知分布式服务器上下线的功能"><a href="#通过zookeeper完成动态感知分布式服务器上下线的功能" class="headerlink" title="通过zookeeper完成动态感知分布式服务器上下线的功能"></a>通过zookeeper完成动态感知分布式服务器上下线的功能</h2><p>[TOC]</p>
+<h4 id="业务描述"><a href="#业务描述" class="headerlink" title="业务描述"></a>业务描述</h4><ul>
+<li>某分布式系统中，主节点可以有多台，可以动态上下线，任意一台客户端都能实时感知到主节点服务器的上下线。当主节点下线的时候，客户端会收到通知，并更新目前在还在线的主节点host信息，可以防止客户端向已经挂掉的节点进行请求。</li>
+</ul>
+<h4 id="服务器端的实现"><a href="#服务器端的实现" class="headerlink" title="服务器端的实现"></a>服务器端的实现</h4><ul>
+<li><p>要想完成上述功能，在我们可以想到通过zookeeper的短暂态的节点完成，在服务器启动的时候，我们连接到zookeeper并向其注册一个短暂态的节点，当服务器因为某种意外宕机的时候，这个节点也会被删除，这样客户端访问所有的注册节点的信息，就是仍然在正常工作的主节点。</p>
+</li>
+<li><p>服务器端的代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> java.io.IOException;</div><div class="line"></div><div class="line"><span class="keyword">import</span> org.apache.zookeeper.CreateMode;</div><div class="line"><span class="keyword">import</span> org.apache.zookeeper.KeeperException;</div><div class="line"><span class="keyword">import</span> org.apache.zookeeper.WatchedEvent;</div><div class="line"><span class="keyword">import</span> org.apache.zookeeper.Watcher;</div><div class="line"><span class="keyword">import</span> org.apache.zookeeper.ZooDefs.Ids;</div><div class="line"><span class="keyword">import</span> org.apache.zookeeper.ZooKeeper;</div><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ClusterServer</span> </span>&#123;</div><div class="line">	</div><div class="line">  	<span class="comment">//zookeeper的ip与端口，这里是zookeeper是一个集群</span></div><div class="line">	<span class="keyword">private</span> String ZK_SERVER_LIST = <span class="string">"mini1:2181,mini2:2181,mini3:2181"</span>;</div><div class="line">	<span class="comment">//设置超时时间，当主节点2s后没反应就认该节点已经挂了</span></div><div class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> sessionTimeout = <span class="number">2000</span>;</div><div class="line">	<span class="comment">//所有的注册节点信息当道/servers下面，方便管理</span></div><div class="line">	<span class="keyword">private</span> String SERVER_DIR = <span class="string">"/servers"</span>;</div><div class="line">	</div><div class="line">	<span class="keyword">private</span> ZooKeeper zk;</div><div class="line"></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">connect</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">		</div><div class="line">		zk = <span class="keyword">new</span> ZooKeeper(ZK_SERVER_LIST, sessionTimeout, <span class="keyword">new</span> Watcher() &#123;</div><div class="line">			</div><div class="line">			<span class="comment">//当zookeeper服务器集群有断线时会调用</span></div><div class="line">			<span class="meta">@Override</span></div><div class="line">			<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">process</span><span class="params">(WatchedEvent event)</span> </span>&#123;</div><div class="line">				<span class="comment">// TODO Auto-generated method stub</span></div><div class="line">				System.out.println(event.toString());</div><div class="line">			&#125;</div><div class="line">		&#125;);</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">register</span><span class="params">(String hontname)</span> <span class="keyword">throws</span> IOException, KeeperException, InterruptedException </span>&#123;</div><div class="line">		<span class="comment">//创建瞬时态且带序号的节点，这样在节点下线后该节点就会被删除</span></div><div class="line">		String result = zk.create(SERVER_DIR+<span class="string">"/server"</span>, hontname.getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);</div><div class="line">		</div><div class="line">		System.out.println(<span class="string">"创建结果："</span>+result);</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">diy</span><span class="params">()</span></span>&#123;</div><div class="line">		System.out.println(<span class="string">"just do it"</span>);</div><div class="line">		<span class="keyword">try</span> &#123;</div><div class="line">			Thread.sleep(Integer.MAX_VALUE);</div><div class="line">		&#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">			<span class="comment">// TODO Auto-generated catch block</span></div><div class="line">			e.printStackTrace();</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, KeeperException, InterruptedException </span>&#123;</div><div class="line">		ClusterServer server =<span class="keyword">new</span> ClusterServer();</div><div class="line">		server.connect();</div><div class="line">		server.register(args[<span class="number">0</span>]);</div><div class="line">		server.diy();</div><div class="line">	&#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+<li><p>程序启动的时候就向服务器把当前主节点的host信息注册到zookeeper中。</p>
+</li>
+<li><p>这里的hostname本来可以通过java api进行动态获取的，不过为了方便实验就省略了。</p>
+</li>
+</ul>
+<h4 id="客户端的实现"><a href="#客户端的实现" class="headerlink" title="客户端的实现"></a>客户端的实现</h4><ul>
+<li><p>客户端所需要的工作是获取正常工作的主节点并且当主节点发生变化的时候可以收到信息，获取最新的正常工作的主节点。所以我们可以对<code>servers</code>下面的子节点信息进行监听，</p>
+</li>
+<li><p>代码实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> java.io.IOException;</div><div class="line"><span class="keyword">import</span> java.util.ArrayList;</div><div class="line"><span class="keyword">import</span> java.util.List;</div><div class="line"></div><div class="line"><span class="keyword">import</span> org.apache.zookeeper.KeeperException;</div><div class="line"><span class="keyword">import</span> org.apache.zookeeper.WatchedEvent;</div><div class="line"><span class="keyword">import</span> org.apache.zookeeper.Watcher;</div><div class="line"><span class="keyword">import</span> org.apache.zookeeper.ZooKeeper;</div><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ClusterClient</span> </span>&#123;</div><div class="line">	<span class="keyword">private</span> String ZK_SERVER_LIST = <span class="string">"mini1:2181,mini2:2181,mini3:2181"</span>;</div><div class="line"></div><div class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> sessionTimeout = <span class="number">2000</span>;</div><div class="line"></div><div class="line">	<span class="keyword">private</span> String SERVER_DIR = <span class="string">"/servers"</span>;</div><div class="line"></div><div class="line">	<span class="keyword">private</span> ZooKeeper zk;</div><div class="line">	</div><div class="line">	<span class="keyword">private</span> List&lt;String&gt; servers=<span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">connect</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">		zk = <span class="keyword">new</span> ZooKeeper(ZK_SERVER_LIST, sessionTimeout, <span class="keyword">new</span> Watcher() &#123;</div><div class="line"></div><div class="line">			<span class="meta">@Override</span></div><div class="line">			<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">process</span><span class="params">(WatchedEvent event)</span> </span>&#123;</div><div class="line">				System.out.println(event.toString());</div><div class="line">				<span class="keyword">try</span> &#123;</div><div class="line">                  	<span class="comment">//收到通知后再次对服务器设置监听。</span></div><div class="line">					getServerList();</div><div class="line">					System.out.println(servers);</div><div class="line">				&#125; <span class="keyword">catch</span> (KeeperException | InterruptedException e) &#123;</div><div class="line">                  	</div><div class="line">				&#125;</div><div class="line">			&#125;</div><div class="line">		&#125;);</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">  	<span class="comment">//获取服务器列表并设置监听</span></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getServerList</span><span class="params">()</span> <span class="keyword">throws</span> KeeperException, InterruptedException</span>&#123;</div><div class="line">		List&lt;String&gt; nodeList = zk.getChildren(SERVER_DIR,<span class="keyword">true</span>);</div><div class="line">		servers.clear();</div><div class="line">		<span class="keyword">for</span>(String node:nodeList)&#123;</div><div class="line">			<span class="keyword">byte</span> []data = zk.getData(SERVER_DIR+<span class="string">"/"</span>+node, <span class="keyword">false</span>, <span class="keyword">null</span>);</div><div class="line">			String hostName = <span class="keyword">new</span> String(data);</div><div class="line">			servers.add(hostName);</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">  	<span class="comment">//做自己爱做的事同时完成守护进程的功能</span></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">diy</span><span class="params">()</span></span>&#123;</div><div class="line">		<span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</div><div class="line">			</div><div class="line">			<span class="meta">@Override</span></div><div class="line">			<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">				<span class="comment">// TODO Auto-generated method stub</span></div><div class="line">				<span class="keyword">while</span> (<span class="keyword">true</span>)&#123;</div><div class="line">					</div><div class="line">				&#125;</div><div class="line">			&#125;</div><div class="line">		&#125;).start();;</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, KeeperException, InterruptedException </span>&#123;</div><div class="line">		ClusterClient client =<span class="keyword">new</span> ClusterClient();</div><div class="line">		client.connect();</div><div class="line">		client.getServerList();</div><div class="line">		client.diy();</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h4><ul>
+<li><p>我们可以在多个终端分别运行服务器程序，用来模拟多个主节点，直接关闭终端模仿主节点的宕机。</p>
+</li>
+<li><p>实验结果如下（当我们动态增加节点的结果）：</p>
+<p><img src="http://img.blog.csdn.net/20170806173020943?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+</li>
+<li><p>所有需要的jar包在zookeeper的解压包里面都有。或者直接在我的<a href="https://github.com/forever-zs/DynamicServiceMonitor" target="_blank" rel="external">github</a>里面有代码以及jar包。</p>
+<p>​</p>
+</li>
+</ul>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/zookeeper/" rel="tag"># zookeeper</a>
+          
+            <a href="/tags/分布式服务/" rel="tag"># 分布式服务</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/08/05/zookeeper/ZooKeeper/" rel="next" title="zookeeper入门">
+                <i class="fa fa-chevron-left"></i> zookeeper入门
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/head.jpg"
+               alt="forever_zs" />
+          <p class="site-author-name" itemprop="name">forever_zs</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">20</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-name">分类</span>
+              
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              
+                <span class="site-state-item-count">30</span>
+                <span class="site-state-item-name">标签</span>
+              
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/forever-zs" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://twitter.com/your-user-name" target="_blank" title="Twitter">
+                  
+                    <i class="fa fa-fw fa-twitter"></i>
+                  
+                  Twitter
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/forever_zs_forever" target="_blank" title="微博">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  微博
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://douban.com/people/your-user-name" target="_blank" title="豆瓣">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  豆瓣
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://www.zhihu.com/people/your-user-name" target="_blank" title="知乎">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  知乎
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#通过zookeeper完成动态感知分布式服务器上下线的功能"><span class="nav-number">1.</span> <span class="nav-text">通过zookeeper完成动态感知分布式服务器上下线的功能</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#业务描述"><span class="nav-number">1.0.1.</span> <span class="nav-text">业务描述</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#服务器端的实现"><span class="nav-number">1.0.2.</span> <span class="nav-text">服务器端的实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#客户端的实现"><span class="nav-number">1.0.3.</span> <span class="nav-text">客户端的实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#测试"><span class="nav-number">1.0.4.</span> <span class="nav-text">测试</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">forever_zs</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

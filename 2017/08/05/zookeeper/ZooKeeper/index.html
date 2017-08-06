@@ -74,7 +74,7 @@
 <link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="js跨域,ajax," />
+  <meta name="keywords" content="zookeeper," />
 
 
 
@@ -90,19 +90,20 @@
 
 
 
-<meta name="description" content="JavaScript的跨域请求[TOC] 神马是跨域请求​    因为浏览器的同源策略，默认情况下，JavaScript在发送AJAX请求时，URL的域名必须和当前页面完全一致。 也就是说，请求ajax的url，域名要相同（www.example.com和example.com不同），协议要相同（http和https不同），端口号要相同（默认是:80端口，它和:8080就不同）。 解决方法 通过在">
-<meta name="keywords" content="js跨域,ajax">
+<meta name="description" content="zookeeper入门[TOC] zookeeper的简介顾名思义，zookeeper就是动物园管理员的意思，Zookeeper是一个分布式协调服务；就是为用户的分布式应用程序提供协调服务。其主要具有一下特点：  zookeeper是为别的分布式程序服务的 Zookeeper本身就是一个分布式程序（只要有半数以上节点存活，zk就能正常服务） Zookeeper所提供的服务涵盖：主从协调、服务器节点">
+<meta name="keywords" content="zookeeper">
 <meta property="og:type" content="article">
-<meta property="og:title" content="JavaScript的跨域请求">
-<meta property="og:url" content="http://yoursite.com/2017/07/12/前端框架/JavaScript学习/JavaScript的Ajax/index.html">
+<meta property="og:title" content="zookeeper入门">
+<meta property="og:url" content="http://yoursite.com/2017/08/05/zookeeper/ZooKeeper/index.html">
 <meta property="og:site_name" content="帅到没朋友">
-<meta property="og:description" content="JavaScript的跨域请求[TOC] 神马是跨域请求​    因为浏览器的同源策略，默认情况下，JavaScript在发送AJAX请求时，URL的域名必须和当前页面完全一致。 也就是说，请求ajax的url，域名要相同（www.example.com和example.com不同），协议要相同（http和https不同），端口号要相同（默认是:80端口，它和:8080就不同）。 解决方法 通过在">
-<meta property="og:image" content="http://img.blog.csdn.net/20170711102846192?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
-<meta property="og:updated_time" content="2017-07-14T09:11:14.000Z">
+<meta property="og:description" content="zookeeper入门[TOC] zookeeper的简介顾名思义，zookeeper就是动物园管理员的意思，Zookeeper是一个分布式协调服务；就是为用户的分布式应用程序提供协调服务。其主要具有一下特点：  zookeeper是为别的分布式程序服务的 Zookeeper本身就是一个分布式程序（只要有半数以上节点存活，zk就能正常服务） Zookeeper所提供的服务涵盖：主从协调、服务器节点">
+<meta property="og:image" content="http://img.blog.csdn.net/20170805144356427?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="http://img.blog.csdn.net/20170806164650973?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:updated_time" content="2017-08-06T09:38:40.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="JavaScript的跨域请求">
-<meta name="twitter:description" content="JavaScript的跨域请求[TOC] 神马是跨域请求​    因为浏览器的同源策略，默认情况下，JavaScript在发送AJAX请求时，URL的域名必须和当前页面完全一致。 也就是说，请求ajax的url，域名要相同（www.example.com和example.com不同），协议要相同（http和https不同），端口号要相同（默认是:80端口，它和:8080就不同）。 解决方法 通过在">
-<meta name="twitter:image" content="http://img.blog.csdn.net/20170711102846192?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta name="twitter:title" content="zookeeper入门">
+<meta name="twitter:description" content="zookeeper入门[TOC] zookeeper的简介顾名思义，zookeeper就是动物园管理员的意思，Zookeeper是一个分布式协调服务；就是为用户的分布式应用程序提供协调服务。其主要具有一下特点：  zookeeper是为别的分布式程序服务的 Zookeeper本身就是一个分布式程序（只要有半数以上节点存活，zk就能正常服务） Zookeeper所提供的服务涵盖：主从协调、服务器节点">
+<meta name="twitter:image" content="http://img.blog.csdn.net/20170805144356427?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
 
 
 
@@ -130,13 +131,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2017/07/12/前端框架/JavaScript学习/JavaScript的Ajax/"/>
+  <link rel="canonical" href="http://yoursite.com/2017/08/05/zookeeper/ZooKeeper/"/>
 
 
 
 
 
-  <title>JavaScript的跨域请求 | 帅到没朋友</title>
+  <title>zookeeper入门 | 帅到没朋友</title>
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -276,7 +277,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/12/前端框架/JavaScript学习/JavaScript的Ajax/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/08/05/zookeeper/ZooKeeper/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="forever_zs">
@@ -293,7 +294,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">JavaScript的跨域请求</h1>
+          <h1 class="post-title" itemprop="name headline">zookeeper入门</h1>
         
 
         <div class="post-meta">
@@ -305,8 +306,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-12T20:10:33+08:00">
-                2017-07-12
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-05T09:10:33+08:00">
+                2017-08-05
               </time>
             
 
@@ -328,8 +329,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/javascript/" itemprop="url" rel="index">
-                    <span itemprop="name">javascript</span>
+                  <a href="/categories/zookeeper/" itemprop="url" rel="index">
+                    <span itemprop="name">zookeeper</span>
                   </a>
                 </span>
 
@@ -362,22 +363,127 @@
       
 
       
-        <h2 id="JavaScript的跨域请求"><a href="#JavaScript的跨域请求" class="headerlink" title="JavaScript的跨域请求"></a>JavaScript的跨域请求</h2><p>[TOC]</p>
-<h4 id="神马是跨域请求"><a href="#神马是跨域请求" class="headerlink" title="神马是跨域请求"></a>神马是跨域请求</h4><p>​    因为浏览器的同源策略，默认情况下，JavaScript在发送AJAX请求时，URL的域名必须和当前页面完全一致。</p>
-<p>也就是说，请求ajax的url，域名要相同（<code>www.example.com</code>和<code>example.com</code>不同），协议要相同（<code>http</code>和<code>https</code>不同），端口号要相同（默认是<code>:80</code>端口，它和<code>:8080</code>就不同）。</p>
-<h4 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h4><ol>
-<li><p>通过在同源域名下架设一个代理服务器来转发，JavaScript负责把请求发送到代理服务器。然后让代理服务器帮助我们完成请求。</p>
+        <h2 id="zookeeper入门"><a href="#zookeeper入门" class="headerlink" title="zookeeper入门"></a>zookeeper入门</h2><p>[TOC]</p>
+<h4 id="zookeeper的简介"><a href="#zookeeper的简介" class="headerlink" title="zookeeper的简介"></a>zookeeper的简介</h4><p>顾名思义，zookeeper就是动物园管理员的意思，Zookeeper是一个分布式协调服务；就是为用户的分布式应用程序提供协调服务。其主要具有一下特点：</p>
+<ol>
+<li>zookeeper是为别的分布式程序服务的</li>
+<li>Zookeeper本身就是一个分布式程序（只要有半数以上节点存活，zk就能正常服务）</li>
+<li>Zookeeper所提供的服务涵盖：主从协调、服务器节点动态上下线、统一配置管理、分布式共享锁、统一名称等服务。</li>
+</ol>
+<p>虽然说可以提供各种服务，但是zookeeper在底层其实只提供了两个功能：</p>
+<ol>
+<li>管理(存储，读取)用户程序提交的<strong>元数据</strong>（不是用户程序的业务数据）；</li>
+<li>并为用户程序提供数据节点监听服务；（监听因故宕机的程序，并通知其他应用程序接替工作）。</li>
+</ol>
+<h4 id="zookeeper的特性"><a href="#zookeeper的特性" class="headerlink" title="zookeeper的特性"></a>zookeeper的特性</h4><ol>
+<li><p>Zookeeper：一个leader，多个follower组成的集群</p>
 </li>
-<li><p>通过JSONP，它有个限制，只能用GET请求，并且要求返回JavaScript。<strong>这种方式跨域实际上是利用了浏览器允许跨域引用JavaScript资源：</strong></p>
+<li><p>全局数据一致：每个server保存一份相同的数据副本，client无论连接到哪个server，数据都是一致的</p>
 </li>
-<li><p>通过CORS进行跨域请求。</p>
-<p>cros是提出的新的跨域策略：</p>
-<p><img src="http://img.blog.csdn.net/20170711102846192?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
-<p>Origin表示本域，也就是浏览器当前页面的域。当JavaScript向外域（如sina.com）发起请求后，浏览器收到响应后，首先检查<code>Access-Control-Allow-Origin</code>是否包含本域（或者<strong>*</strong>），如果是，则此次跨域请求成功，如果不是，则请求失败，JavaScript将无法获取到响应的任何数据。</p>
-<p>可见，跨域能否成功，取决于对方服务器是否愿意给你设置一个正确的<code>Access-Control-Allow-Origin</code>，决定权始终在对方手中。</p>
+<li><p>分布式读写，更新请求转发，由leader实施</p>
+</li>
+<li><p>更新请求顺序进行，来自同一个client的更新请求按其发送顺序依次执行</p>
+</li>
+<li><p>数据更新原子性，一次数据更新要么成功，要么失败</p>
+</li>
+<li><p>实时性，在一定时间范围内，client能读到最新数据</p>
+</li>
+</ol>
+<h4 id="zookeeper环境搭建"><a href="#zookeeper环境搭建" class="headerlink" title="zookeeper环境搭建"></a>zookeeper环境搭建</h4><ol>
+<li><p>拷贝安装包到对应服务器上。</p>
+</li>
+<li><p>解压缩安装包</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">tar -zvxf zookeeper-3.4.5.tar.gz</div><div class="line">mv zookeeper-3.4.5 zookeeper #修改文件夹名称</div></pre></td></tr></table></figure>
+</li>
+<li><p>配置环境变量</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">vim /etc/profile</div><div class="line"><span class="meta">#</span>加入以下信息</div><div class="line">export ZOOKEEPER_HOME=/opt/zookeeper</div><div class="line">export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$HIVE_HOME/bin:$ZOOKEEPER_HOME/bin</div><div class="line"><span class="meta">#</span>添加之后</div><div class="line">source /etc/profile</div></pre></td></tr></table></figure>
+</li>
+<li><p>修改conf文件夹下的配置文件（复制zoo_sample.xml为zoo.xml），添加如下内容</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">dataDir=/root/zookeeper/data</div><div class="line">dataLogDir=/root/zookeeper/log</div><div class="line">server.1=mini1:2888:3888   #其余节点的主机名，以及通信的端口和检测连接的端口</div><div class="line">server.2=mini2:2888:3888</div><div class="line">server.3=mini3:2888:3888</div></pre></td></tr></table></figure>
+</li>
+<li><p>在前面定义的dataDir目录下新建muid文件，加入内容1，之后配置的节点依次递增。</p>
+</li>
+<li><p>启动服务（其余节点需要关闭防火墙）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">zkServer.sh start  #启动服务</div><div class="line">zkServer.sh status  #查看服务状态（主从节点信息）</div></pre></td></tr></table></figure>
 <p>​</p>
 </li>
 </ol>
+<h4 id="Zookeeper的数据管理功能"><a href="#Zookeeper的数据管理功能" class="headerlink" title="Zookeeper的数据管理功能"></a>Zookeeper的数据管理功能</h4><ul>
+<li><p>在zookeeper中默认通过树的结构保存用户的元数据</p>
+<p>​</p>
+<p><img src="http://img.blog.csdn.net/20170805144356427?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>每一个节点都可以存放数据，类似与文件系统的树形存储目录。</p>
+</li>
+<li><p>通过命令行连接到zookeeper服务器。</p>
+<p>通过解压目录的<code>bin/zkCli.sh</code>可以直接启动命令行的客户端。</p>
+</li>
+<li><p>在zookeeper中每个节点的数据可以分为两类：</p>
+<blockquote>
+<ol>
+<li>瞬时节点（<strong>ephemeral</strong>）（当连接进程与zookeeper断开连接的一定时间后（心跳时间）就会删除节点）</li>
+<li>持久节点（<strong>persistent</strong>）（即时连接进程与zookeeper断开也不会删除该节点）</li>
+</ol>
+</blockquote>
+<p>而且每种节点又分为两种，有序节点与无序节点（<strong>有序节点在创建时会默认在其后添加一个递增的序号</strong>）。所以总共在zookeeper中包括了四种节点。</p>
+<blockquote>
+<ul>
+<li>PERSISTENT</li>
+<li>PERSISTENT_SEQUENTIAL（持久序列/test0000000019 ）</li>
+<li>EPHEMERAL</li>
+<li>EPHEMERAL_SEQUENTIAL</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<h4 id="通过客户端对元数据进行管理"><a href="#通过客户端对元数据进行管理" class="headerlink" title="通过客户端对元数据进行管理"></a>通过客户端对元数据进行管理</h4><ul>
+<li>通过<code>bin/zkCli.sh</code>我们通过客户端连接到zookeeper，我们可以在命令行对节点进行增删改查操作。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>create</td>
+<td>在本地目录树中创建一个节点</td>
+</tr>
+<tr>
+<td>delete</td>
+<td>删除一个节点</td>
+</tr>
+<tr>
+<td>exists</td>
+<td>测试本地是否存在目标节点</td>
+</tr>
+<tr>
+<td>get/set  data</td>
+<td>从目标节点上读取 / 写数据</td>
+</tr>
+<tr>
+<td>get/set  ACL</td>
+<td>获取 / 设置目标节点访问控制列表信息</td>
+</tr>
+<tr>
+<td>get  children</td>
+<td>检索一个子节点上的列表</td>
+</tr>
+<tr>
+<td>sync</td>
+<td>等待要被传送的数据</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><p>通过<code>help</code>命令我们可以对查看命令及其使用方法。</p>
+<p><img src="http://img.blog.csdn.net/20170806164650973?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>值得注意的是在<code>ls</code>与<code>get</code>命令后面我们可以对某个数据增加监控，当某个数据发生变化的时候连接进程后收到信号。只能监听一次，完成后后面的事件不会再触发监听。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">get /test/test1 true  #对/test/test1增加监听，当其数据发生变化的时候会收到信息</div><div class="line"><span class="meta">#</span> WatchedEvent state:SyncConnected type:NodeDataChanged path:/test/test1</div><div class="line">ls /test true  #对/test增加监听，子目录下内容发生变化的时候会收到信息。</div><div class="line"><span class="meta">#</span> WatchedEvent state:SyncConnected type:NodeDeleted path:/test/test1</div></pre></td></tr></table></figure>
+<p>​</p>
+</li>
+</ul>
 
       
     </div>
@@ -407,9 +513,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/js跨域/" rel="tag"># js跨域</a>
-          
-            <a href="/tags/ajax/" rel="tag"># ajax</a>
+            <a href="/tags/zookeeper/" rel="tag"># zookeeper</a>
           
         </div>
       
@@ -422,8 +526,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2017/07/11/前端框架/JavaScript学习/JavaScript的标准对象/" rel="next" title="JavaScript的标准对象">
-                <i class="fa fa-chevron-left"></i> JavaScript的标准对象
+              <a href="/2017/08/01/python/用python撸出一个静态web服务器/" rel="next" title="python构建简单的静态web服务器">
+                <i class="fa fa-chevron-left"></i> python构建简单的静态web服务器
               </a>
             
           </div>
@@ -432,8 +536,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2017/07/14/前端框架/JavaScript学习/javaScript单引号与双引号的区别/" rel="prev" title="JavaScrript单引号与双引号的区别">
-                JavaScrript单引号与双引号的区别 <i class="fa fa-chevron-right"></i>
+              <a href="/2017/08/06/zookeeper/动态感知服务器上下线/" rel="prev" title="通过zookeeper完成动态分布式服务器务器上下线的功能">
+                通过zookeeper完成动态分布式服务器务器上下线的功能 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -610,7 +714,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#JavaScript的跨域请求"><span class="nav-number">1.</span> <span class="nav-text">JavaScript的跨域请求</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#神马是跨域请求"><span class="nav-number">1.0.1.</span> <span class="nav-text">神马是跨域请求</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#解决方法"><span class="nav-number">1.0.2.</span> <span class="nav-text">解决方法</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#zookeeper入门"><span class="nav-number">1.</span> <span class="nav-text">zookeeper入门</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#zookeeper的简介"><span class="nav-number">1.0.1.</span> <span class="nav-text">zookeeper的简介</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#zookeeper的特性"><span class="nav-number">1.0.2.</span> <span class="nav-text">zookeeper的特性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#zookeeper环境搭建"><span class="nav-number">1.0.3.</span> <span class="nav-text">zookeeper环境搭建</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Zookeeper的数据管理功能"><span class="nav-number">1.0.4.</span> <span class="nav-text">Zookeeper的数据管理功能</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#通过客户端对元数据进行管理"><span class="nav-number">1.0.5.</span> <span class="nav-text">通过客户端对元数据进行管理</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>

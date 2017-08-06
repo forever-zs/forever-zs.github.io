@@ -271,6 +271,425 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/08/06/zookeeper/动态感知服务器上下线/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="帅到没朋友">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/08/06/zookeeper/动态感知服务器上下线/" itemprop="url">通过zookeeper完成动态分布式服务器务器上下线的功能</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-06T09:10:33+08:00">
+                2017-08-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/zookeeper/" itemprop="url" rel="index">
+                    <span itemprop="name">zookeeper</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="通过zookeeper完成动态感知分布式服务器上下线的功能"><a href="#通过zookeeper完成动态感知分布式服务器上下线的功能" class="headerlink" title="通过zookeeper完成动态感知分布式服务器上下线的功能"></a>通过zookeeper完成动态感知分布式服务器上下线的功能</h2><p>[TOC]</p>
+<h4 id="业务描述"><a href="#业务描述" class="headerlink" title="业务描述"></a>业务描述</h4><ul>
+<li>某分布式系统中，主节点可以有多台，可以动态上下线，任意一台客户端都能实时感知到主节点服务器的上下线。当主节点下线的时候，客户端会收到通知，并更新目前在还在线的主节点host信息，可以防止客户端向已经挂掉的节点进行请求。</li>
+</ul>
+<h4 id="服务器端的实现"><a href="#服务器端的实现" class="headerlink" title="服务器端的实现"></a>服务器端的实现</h4><ul>
+<li><p>要想完成上述功能，在我们可以想到通过zookeeper的短暂态的节点完成，在服务器启动的时候，我们连接到zookeeper并向其注册一个短暂态的节点，当服务器因为某种意外宕机的时候，这个节点也会被删除，这样客户端访问所有的注册节点的信息，就是仍然在正常工作的主节点。</p>
+</li>
+<li><p>服务器端的代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> java.io.IOException;</div><div class="line"></div><div class="line"><span class="keyword">import</span> org.apache.zookeeper.CreateMode;</div><div class="line"><span class="keyword">import</span> org.apache.zookeeper.KeeperException;</div><div class="line"><span class="keyword">import</span> org.apache.zookeeper.WatchedEvent;</div><div class="line"><span class="keyword">import</span> org.apache.zookeeper.Watcher;</div><div class="line"><span class="keyword">import</span> org.apache.zookeeper.ZooDefs.Ids;</div><div class="line"><span class="keyword">import</span> org.apache.zookeeper.ZooKeeper;</div><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ClusterServer</span> </span>&#123;</div><div class="line">	</div><div class="line">  	<span class="comment">//zookeeper的ip与端口，这里是zookeeper是一个集群</span></div><div class="line">	<span class="keyword">private</span> String ZK_SERVER_LIST = <span class="string">"mini1:2181,mini2:2181,mini3:2181"</span>;</div><div class="line">	<span class="comment">//设置超时时间，当主节点2s后没反应就认该节点已经挂了</span></div><div class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> sessionTimeout = <span class="number">2000</span>;</div><div class="line">	<span class="comment">//所有的注册节点信息当道/servers下面，方便管理</span></div><div class="line">	<span class="keyword">private</span> String SERVER_DIR = <span class="string">"/servers"</span>;</div><div class="line">	</div><div class="line">	<span class="keyword">private</span> ZooKeeper zk;</div><div class="line"></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">connect</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">		</div><div class="line">		zk = <span class="keyword">new</span> ZooKeeper(ZK_SERVER_LIST, sessionTimeout, <span class="keyword">new</span> Watcher() &#123;</div><div class="line">			</div><div class="line">			<span class="comment">//当zookeeper服务器集群有断线时会调用</span></div><div class="line">			<span class="meta">@Override</span></div><div class="line">			<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">process</span><span class="params">(WatchedEvent event)</span> </span>&#123;</div><div class="line">				<span class="comment">// TODO Auto-generated method stub</span></div><div class="line">				System.out.println(event.toString());</div><div class="line">			&#125;</div><div class="line">		&#125;);</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">register</span><span class="params">(String hontname)</span> <span class="keyword">throws</span> IOException, KeeperException, InterruptedException </span>&#123;</div><div class="line">		<span class="comment">//创建瞬时态且带序号的节点，这样在节点下线后该节点就会被删除</span></div><div class="line">		String result = zk.create(SERVER_DIR+<span class="string">"/server"</span>, hontname.getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);</div><div class="line">		</div><div class="line">		System.out.println(<span class="string">"创建结果："</span>+result);</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">diy</span><span class="params">()</span></span>&#123;</div><div class="line">		System.out.println(<span class="string">"just do it"</span>);</div><div class="line">		<span class="keyword">try</span> &#123;</div><div class="line">			Thread.sleep(Integer.MAX_VALUE);</div><div class="line">		&#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">			<span class="comment">// TODO Auto-generated catch block</span></div><div class="line">			e.printStackTrace();</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, KeeperException, InterruptedException </span>&#123;</div><div class="line">		ClusterServer server =<span class="keyword">new</span> ClusterServer();</div><div class="line">		server.connect();</div><div class="line">		server.register(args[<span class="number">0</span>]);</div><div class="line">		server.diy();</div><div class="line">	&#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+<li><p>程序启动的时候就向服务器把当前主节点的host信息注册到zookeeper中。</p>
+</li>
+<li><p>这里的hostname本来可以通过java api进行动态获取的，不过为了方便实验就省略了。</p>
+</li>
+</ul>
+<h4 id="客户端的实现"><a href="#客户端的实现" class="headerlink" title="客户端的实现"></a>客户端的实现</h4><ul>
+<li><p>客户端所需要的工作是获取正常工作的主节点并且当主节点发生变化的时候可以收到信息，获取最新的正常工作的主节点。所以我们可以对<code>servers</code>下面的子节点信息进行监听，</p>
+</li>
+<li><p>代码实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> java.io.IOException;</div><div class="line"><span class="keyword">import</span> java.util.ArrayList;</div><div class="line"><span class="keyword">import</span> java.util.List;</div><div class="line"></div><div class="line"><span class="keyword">import</span> org.apache.zookeeper.KeeperException;</div><div class="line"><span class="keyword">import</span> org.apache.zookeeper.WatchedEvent;</div><div class="line"><span class="keyword">import</span> org.apache.zookeeper.Watcher;</div><div class="line"><span class="keyword">import</span> org.apache.zookeeper.ZooKeeper;</div><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ClusterClient</span> </span>&#123;</div><div class="line">	<span class="keyword">private</span> String ZK_SERVER_LIST = <span class="string">"mini1:2181,mini2:2181,mini3:2181"</span>;</div><div class="line"></div><div class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> sessionTimeout = <span class="number">2000</span>;</div><div class="line"></div><div class="line">	<span class="keyword">private</span> String SERVER_DIR = <span class="string">"/servers"</span>;</div><div class="line"></div><div class="line">	<span class="keyword">private</span> ZooKeeper zk;</div><div class="line">	</div><div class="line">	<span class="keyword">private</span> List&lt;String&gt; servers=<span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">connect</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">		zk = <span class="keyword">new</span> ZooKeeper(ZK_SERVER_LIST, sessionTimeout, <span class="keyword">new</span> Watcher() &#123;</div><div class="line"></div><div class="line">			<span class="meta">@Override</span></div><div class="line">			<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">process</span><span class="params">(WatchedEvent event)</span> </span>&#123;</div><div class="line">				System.out.println(event.toString());</div><div class="line">				<span class="keyword">try</span> &#123;</div><div class="line">                  	<span class="comment">//收到通知后再次对服务器设置监听。</span></div><div class="line">					getServerList();</div><div class="line">					System.out.println(servers);</div><div class="line">				&#125; <span class="keyword">catch</span> (KeeperException | InterruptedException e) &#123;</div><div class="line">                  	</div><div class="line">				&#125;</div><div class="line">			&#125;</div><div class="line">		&#125;);</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">  	<span class="comment">//获取服务器列表并设置监听</span></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getServerList</span><span class="params">()</span> <span class="keyword">throws</span> KeeperException, InterruptedException</span>&#123;</div><div class="line">		List&lt;String&gt; nodeList = zk.getChildren(SERVER_DIR,<span class="keyword">true</span>);</div><div class="line">		servers.clear();</div><div class="line">		<span class="keyword">for</span>(String node:nodeList)&#123;</div><div class="line">			<span class="keyword">byte</span> []data = zk.getData(SERVER_DIR+<span class="string">"/"</span>+node, <span class="keyword">false</span>, <span class="keyword">null</span>);</div><div class="line">			String hostName = <span class="keyword">new</span> String(data);</div><div class="line">			servers.add(hostName);</div><div class="line">		&#125;</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">  	<span class="comment">//做自己爱做的事同时完成守护进程的功能</span></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">diy</span><span class="params">()</span></span>&#123;</div><div class="line">		<span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</div><div class="line">			</div><div class="line">			<span class="meta">@Override</span></div><div class="line">			<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">				<span class="comment">// TODO Auto-generated method stub</span></div><div class="line">				<span class="keyword">while</span> (<span class="keyword">true</span>)&#123;</div><div class="line">					</div><div class="line">				&#125;</div><div class="line">			&#125;</div><div class="line">		&#125;).start();;</div><div class="line">	&#125;</div><div class="line">	</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, KeeperException, InterruptedException </span>&#123;</div><div class="line">		ClusterClient client =<span class="keyword">new</span> ClusterClient();</div><div class="line">		client.connect();</div><div class="line">		client.getServerList();</div><div class="line">		client.diy();</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h4><ul>
+<li><p>我们可以在多个终端分别运行服务器程序，用来模拟多个主节点，直接关闭终端模仿主节点的宕机。</p>
+</li>
+<li><p>实验结果如下（当我们动态增加节点的结果）：</p>
+<p><img src="http://img.blog.csdn.net/20170806173020943?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+</li>
+<li><p>所有需要的jar包在zookeeper的解压包里面都有。或者直接在我的<a href="https://github.com/forever-zs/DynamicServiceMonitor" target="_blank" rel="external">github</a>里面有代码以及jar包。</p>
+<p>​</p>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/08/05/zookeeper/ZooKeeper/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="帅到没朋友">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/08/05/zookeeper/ZooKeeper/" itemprop="url">zookeeper入门</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-05T09:10:33+08:00">
+                2017-08-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/zookeeper/" itemprop="url" rel="index">
+                    <span itemprop="name">zookeeper</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="zookeeper入门"><a href="#zookeeper入门" class="headerlink" title="zookeeper入门"></a>zookeeper入门</h2><p>[TOC]</p>
+<h4 id="zookeeper的简介"><a href="#zookeeper的简介" class="headerlink" title="zookeeper的简介"></a>zookeeper的简介</h4><p>顾名思义，zookeeper就是动物园管理员的意思，Zookeeper是一个分布式协调服务；就是为用户的分布式应用程序提供协调服务。其主要具有一下特点：</p>
+<ol>
+<li>zookeeper是为别的分布式程序服务的</li>
+<li>Zookeeper本身就是一个分布式程序（只要有半数以上节点存活，zk就能正常服务）</li>
+<li>Zookeeper所提供的服务涵盖：主从协调、服务器节点动态上下线、统一配置管理、分布式共享锁、统一名称等服务。</li>
+</ol>
+<p>虽然说可以提供各种服务，但是zookeeper在底层其实只提供了两个功能：</p>
+<ol>
+<li>管理(存储，读取)用户程序提交的<strong>元数据</strong>（不是用户程序的业务数据）；</li>
+<li>并为用户程序提供数据节点监听服务；（监听因故宕机的程序，并通知其他应用程序接替工作）。</li>
+</ol>
+<h4 id="zookeeper的特性"><a href="#zookeeper的特性" class="headerlink" title="zookeeper的特性"></a>zookeeper的特性</h4><ol>
+<li><p>Zookeeper：一个leader，多个follower组成的集群</p>
+</li>
+<li><p>全局数据一致：每个server保存一份相同的数据副本，client无论连接到哪个server，数据都是一致的</p>
+</li>
+<li><p>分布式读写，更新请求转发，由leader实施</p>
+</li>
+<li><p>更新请求顺序进行，来自同一个client的更新请求按其发送顺序依次执行</p>
+</li>
+<li><p>数据更新原子性，一次数据更新要么成功，要么失败</p>
+</li>
+<li><p>实时性，在一定时间范围内，client能读到最新数据</p>
+</li>
+</ol>
+<h4 id="zookeeper环境搭建"><a href="#zookeeper环境搭建" class="headerlink" title="zookeeper环境搭建"></a>zookeeper环境搭建</h4><ol>
+<li><p>拷贝安装包到对应服务器上。</p>
+</li>
+<li><p>解压缩安装包</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">tar -zvxf zookeeper-3.4.5.tar.gz</div><div class="line">mv zookeeper-3.4.5 zookeeper #修改文件夹名称</div></pre></td></tr></table></figure>
+</li>
+<li><p>配置环境变量</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">vim /etc/profile</div><div class="line"><span class="meta">#</span>加入以下信息</div><div class="line">export ZOOKEEPER_HOME=/opt/zookeeper</div><div class="line">export PATH=$PATH:$JAVA_HOME/bin:$HADOOP_HOME/bin:$HADOOP_HOME/sbin:$HIVE_HOME/bin:$ZOOKEEPER_HOME/bin</div><div class="line"><span class="meta">#</span>添加之后</div><div class="line">source /etc/profile</div></pre></td></tr></table></figure>
+</li>
+<li><p>修改conf文件夹下的配置文件（复制zoo_sample.xml为zoo.xml），添加如下内容</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">dataDir=/root/zookeeper/data</div><div class="line">dataLogDir=/root/zookeeper/log</div><div class="line">server.1=mini1:2888:3888   #其余节点的主机名，以及通信的端口和检测连接的端口</div><div class="line">server.2=mini2:2888:3888</div><div class="line">server.3=mini3:2888:3888</div></pre></td></tr></table></figure>
+</li>
+<li><p>在前面定义的dataDir目录下新建muid文件，加入内容1，之后配置的节点依次递增。</p>
+</li>
+<li><p>启动服务（其余节点需要关闭防火墙）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">zkServer.sh start  #启动服务</div><div class="line">zkServer.sh status  #查看服务状态（主从节点信息）</div></pre></td></tr></table></figure>
+<p>​</p>
+</li>
+</ol>
+<h4 id="Zookeeper的数据管理功能"><a href="#Zookeeper的数据管理功能" class="headerlink" title="Zookeeper的数据管理功能"></a>Zookeeper的数据管理功能</h4><ul>
+<li><p>在zookeeper中默认通过树的结构保存用户的元数据</p>
+<p>​</p>
+<p><img src="http://img.blog.csdn.net/20170805144356427?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>每一个节点都可以存放数据，类似与文件系统的树形存储目录。</p>
+</li>
+<li><p>通过命令行连接到zookeeper服务器。</p>
+<p>通过解压目录的<code>bin/zkCli.sh</code>可以直接启动命令行的客户端。</p>
+</li>
+<li><p>在zookeeper中每个节点的数据可以分为两类：</p>
+<blockquote>
+<ol>
+<li>瞬时节点（<strong>ephemeral</strong>）（当连接进程与zookeeper断开连接的一定时间后（心跳时间）就会删除节点）</li>
+<li>持久节点（<strong>persistent</strong>）（即时连接进程与zookeeper断开也不会删除该节点）</li>
+</ol>
+</blockquote>
+<p>而且每种节点又分为两种，有序节点与无序节点（<strong>有序节点在创建时会默认在其后添加一个递增的序号</strong>）。所以总共在zookeeper中包括了四种节点。</p>
+<blockquote>
+<ul>
+<li>PERSISTENT</li>
+<li>PERSISTENT_SEQUENTIAL（持久序列/test0000000019 ）</li>
+<li>EPHEMERAL</li>
+<li>EPHEMERAL_SEQUENTIAL</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<h4 id="通过客户端对元数据进行管理"><a href="#通过客户端对元数据进行管理" class="headerlink" title="通过客户端对元数据进行管理"></a>通过客户端对元数据进行管理</h4><ul>
+<li>通过<code>bin/zkCli.sh</code>我们通过客户端连接到zookeeper，我们可以在命令行对节点进行增删改查操作。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>create</td>
+<td>在本地目录树中创建一个节点</td>
+</tr>
+<tr>
+<td>delete</td>
+<td>删除一个节点</td>
+</tr>
+<tr>
+<td>exists</td>
+<td>测试本地是否存在目标节点</td>
+</tr>
+<tr>
+<td>get/set  data</td>
+<td>从目标节点上读取 / 写数据</td>
+</tr>
+<tr>
+<td>get/set  ACL</td>
+<td>获取 / 设置目标节点访问控制列表信息</td>
+</tr>
+<tr>
+<td>get  children</td>
+<td>检索一个子节点上的列表</td>
+</tr>
+<tr>
+<td>sync</td>
+<td>等待要被传送的数据</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><p>通过<code>help</code>命令我们可以对查看命令及其使用方法。</p>
+<p><img src="http://img.blog.csdn.net/20170806164650973?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>值得注意的是在<code>ls</code>与<code>get</code>命令后面我们可以对某个数据增加监控，当某个数据发生变化的时候连接进程后收到信号。只能监听一次，完成后后面的事件不会再触发监听。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">get /test/test1 true  #对/test/test1增加监听，当其数据发生变化的时候会收到信息</div><div class="line"><span class="meta">#</span> WatchedEvent state:SyncConnected type:NodeDataChanged path:/test/test1</div><div class="line">ls /test true  #对/test增加监听，子目录下内容发生变化的时候会收到信息。</div><div class="line"><span class="meta">#</span> WatchedEvent state:SyncConnected type:NodeDeleted path:/test/test1</div></pre></td></tr></table></figure>
+<p>​</p>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/08/01/python/用python撸出一个静态web服务器/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1648,390 +2067,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/11/前端框架/JavaScript学习/JavaScript的标准对象/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="forever_zs">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/head.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="帅到没朋友">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/07/11/前端框架/JavaScript学习/JavaScript的标准对象/" itemprop="url">JavaScript的标准对象</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-11T20:10:33+08:00">
-                2017-07-11
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/javascript/" itemprop="url" rel="index">
-                    <span itemprop="name">javascript</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="JavaScript的标准对象"><a href="#JavaScript的标准对象" class="headerlink" title="JavaScript的标准对象"></a>JavaScript的标准对象</h2><p>[TOC]</p>
-<h4 id="Date"><a href="#Date" class="headerlink" title="Date"></a>Date</h4><ul>
-<li><p>在JavaScript中，<code>Date</code>对象用来表示日期和时间。</p>
-</li>
-<li><p>常用api</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> now = <span class="keyword">new</span> <span class="built_in">Date</span>();</div><div class="line">now; <span class="comment">// Wed Jun 24 2015 19:49:22 GMT+0800 (CST)</span></div><div class="line">now.getFullYear(); <span class="comment">// 2015, 年份</span></div><div class="line">now.getMonth(); <span class="comment">// 5, 月份，注意月份范围是0~11，5表示六月</span></div><div class="line">now.getDate(); <span class="comment">// 24, 表示24号</span></div><div class="line">now.getDay(); <span class="comment">// 3, 表示星期三</span></div><div class="line">now.getHours(); <span class="comment">// 19, 24小时制</span></div><div class="line">now.getMinutes(); <span class="comment">// 49, 分钟</span></div><div class="line">now.getSeconds(); <span class="comment">// 22, 秒</span></div><div class="line">now.getMilliseconds(); <span class="comment">// 875, 毫秒数</span></div><div class="line">now.getTime(); <span class="comment">// 1435146562875, 以number形式表示的时间戳</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>创建一个指定的时间</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> d = <span class="keyword">new</span> <span class="built_in">Date</span>(<span class="number">2015</span>, <span class="number">5</span>, <span class="number">19</span>, <span class="number">20</span>, <span class="number">15</span>, <span class="number">30</span>, <span class="number">123</span>);</div><div class="line"><span class="comment">//由于设计者的脑抽，所以这里的5代表6月份，月份从0开始的</span></div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h4 id="正则表达式"><a href="#正则表达式" class="headerlink" title="正则表达式"></a>正则表达式</h4><ul>
-<li><p>js中的正则表达式</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> re1 = <span class="regexp">/ABC\-001/</span>;   <span class="comment">//直接通过/正则表达式/格式创建</span></div><div class="line"><span class="keyword">var</span> re2 = <span class="keyword">new</span> <span class="built_in">RegExp</span>(<span class="string">'ABC\\-001'</span>);   <span class="comment">//通过创建RegExp对象</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>常用功能</p>
-<ol>
-<li><p>切分字符串</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="string">'a b   c'</span>.split(<span class="regexp">/\s+/</span>); <span class="comment">// ['a', 'b', 'c']</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>判断是否匹配</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> re = <span class="regexp">/^\d&#123;3&#125;\-\d&#123;3,8&#125;$/</span>;</div><div class="line">re.test(<span class="string">'010-12345'</span>); <span class="comment">// true</span></div><div class="line">re.test(<span class="string">'010-1234x'</span>); <span class="comment">// false</span></div><div class="line">re.test(<span class="string">'010 12345'</span>); <span class="comment">// false</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>分组（即提取子串）</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">///^(\d&#123;3&#125;)-(\d&#123;3,8&#125;)$分别定义了两个组，可以直接从匹配的字符串中提取出区号和本地号码：</span></div><div class="line"><span class="keyword">var</span> re = <span class="regexp">/^(\d&#123;3&#125;)-(\d&#123;3,8&#125;)$/</span>;</div><div class="line">re.exec(<span class="string">'010-12345'</span>); <span class="comment">// ['010-12345', '010', '12345']</span></div><div class="line">re.exec(<span class="string">'010 12345'</span>); <span class="comment">// null</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>全局搜索</p>
-<p>通过全局标志符号说明是全局搜索。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> r1 = <span class="regexp">/test/g</span>;</div><div class="line"><span class="comment">// 等价于:</span></div><div class="line"><span class="keyword">var</span> r2 = <span class="keyword">new</span> <span class="built_in">RegExp</span>(<span class="string">'test'</span>, <span class="string">'g'</span>);</div></pre></td></tr></table></figure>
-<p>进行全局搜索</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> s = <span class="string">'JavaScript, VBScript, JScript and ECMAScript'</span>;</div><div class="line"><span class="keyword">var</span> re=<span class="regexp">/[a-zA-Z]+Script/g</span>;</div><div class="line"></div><div class="line"><span class="comment">// 使用全局匹配:</span></div><div class="line">re.exec(s); <span class="comment">// ['JavaScript']</span></div><div class="line">re.lastIndex; <span class="comment">// 10</span></div><div class="line"></div><div class="line">re.exec(s); <span class="comment">// ['VBScript']</span></div><div class="line">re.lastIndex; <span class="comment">// 20</span></div><div class="line"></div><div class="line">re.exec(s); <span class="comment">// ['JScript']</span></div><div class="line">re.lastIndex; <span class="comment">// 29</span></div><div class="line"></div><div class="line">re.exec(s); <span class="comment">// ['ECMAScript']</span></div><div class="line">re.lastIndex; <span class="comment">// 44</span></div><div class="line"></div><div class="line">re.exec(s); <span class="comment">// null，直到结束仍没有匹配到</span></div></pre></td></tr></table></figure>
-<p>正则表达式还可以指定<code>i</code>标志，表示忽略大小写，<code>m</code>标志，表示执行多行匹配。</p>
-</li>
-</ol>
-</li>
-</ul>
-<h4 id="JavaScript中的json"><a href="#JavaScript中的json" class="headerlink" title="JavaScript中的json"></a>JavaScript中的json</h4><ul>
-<li><p>序列化为json</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> xiaoming = &#123;</div><div class="line">    <span class="attr">name</span>: <span class="string">'小明'</span>,</div><div class="line">    <span class="attr">age</span>: <span class="number">14</span>,</div><div class="line">    <span class="attr">gender</span>: <span class="literal">true</span>,</div><div class="line">    <span class="attr">height</span>: <span class="number">1.65</span>,</div><div class="line">    <span class="attr">grade</span>: <span class="literal">null</span>,</div><div class="line">    <span class="string">'middle-school'</span>: <span class="string">'\"W3C\" Middle School'</span>,</div><div class="line">    <span class="attr">skills</span>: [<span class="string">'JavaScript'</span>, <span class="string">'Java'</span>, <span class="string">'Python'</span>, <span class="string">'Lisp'</span>]</div><div class="line">&#125;;</div><div class="line"><span class="comment">//普通转化</span></div><div class="line"><span class="built_in">JSON</span>.stringify(xiaoming); </div><div class="line"><span class="comment">//筛选转化，第二个参数代表输出指定的属性</span></div><div class="line"><span class="built_in">JSON</span>.stringify(xiaoming, [<span class="string">'name'</span>, <span class="string">'skills'</span>], <span class="string">'  '</span>);</div><div class="line"><span class="comment">//通过函数预处理转化</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">convert</span>(<span class="params">key, value</span>) </span>&#123;</div><div class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> value === <span class="string">'string'</span>) &#123;</div><div class="line">        <span class="keyword">return</span> value.toUpperCase();</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> value;</div><div class="line">&#125;</div><div class="line"><span class="built_in">JSON</span>.stringify(xiaoming, convert, <span class="string">'  '</span>);</div></pre></td></tr></table></figure>
-</li>
-<li><p>反序列化为对象</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//普通转化</span></div><div class="line"><span class="built_in">JSON</span>.parse(<span class="string">'&#123;"name":"小明","age":14&#125;'</span>); <span class="comment">// Object &#123;name: '小明', age: 14&#125;</span></div><div class="line"><span class="comment">//加强转化</span></div><div class="line"><span class="built_in">JSON</span>.parse(<span class="string">'&#123;"name":"小明","age":14&#125;'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">key, value</span>) </span>&#123;</div><div class="line">    <span class="comment">// 把number * 2:</span></div><div class="line">    <span class="keyword">if</span> (key === <span class="string">'name'</span>) &#123;</div><div class="line">        <span class="keyword">return</span> value + <span class="string">'同学'</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> value;</div><div class="line">&#125;); <span class="comment">// Object &#123;name: '小明同学', age: 14&#125;</span></div></pre></td></tr></table></figure>
-<p>​</p>
-</li>
-</ul>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/11/前端框架/JQuery/JQuery对DOM的操作/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="forever_zs">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/head.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="帅到没朋友">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/07/11/前端框架/JQuery/JQuery对DOM的操作/" itemprop="url">JQuery对DOM的操作</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-11T20:00:00+08:00">
-                2017-07-11
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/jquery/" itemprop="url" rel="index">
-                    <span itemprop="name">jquery</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="JQuery对DOM的操作"><a href="#JQuery对DOM的操作" class="headerlink" title="JQuery对DOM的操作"></a>JQuery对DOM的操作</h2><p>[TOC]</p>
-<h4 id="JQuery简介"><a href="#JQuery简介" class="headerlink" title="JQuery简介"></a>JQuery简介</h4><ul>
-<li><p><code>$</code>是著名的jQuery符号。</p>
-<p>实际上，jQuery把所有功能全部封装在一个全局变量<code>jQuery</code>中，而<code>$</code>也是一个合法的变量名，它是变量<code>jQuery</code>的别名：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="built_in">window</span>.jQuery; <span class="comment">// jQuery(selector, context)</span></div><div class="line"><span class="built_in">window</span>.$; <span class="comment">// jQuery(selector, context)</span></div><div class="line">$ === jQuery; <span class="comment">// true</span></div><div class="line"><span class="keyword">typeof</span>($); <span class="comment">// 'function'</span></div></pre></td></tr></table></figure>
-<p><code>$</code>本质上就是一个函数，但是函数也是对象，于是<code>$</code>除了可以直接调用外，也可以有很多其他属性。</p>
-</li>
-</ul>
-<h4 id="JQuery的选择器"><a href="#JQuery的选择器" class="headerlink" title="JQuery的选择器"></a>JQuery的选择器</h4><ol>
-<li><p>通过id查找</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 查找&lt;div id="abc"&gt;:</span></div><div class="line"><span class="keyword">var</span> div = $(<span class="string">'#abc'</span>);  <span class="comment">//返回的对象是jQuery对象,jQuery对象类似数组，它的每个元素都是一个引用了DOM节点的对象。</span></div></pre></td></tr></table></figure>
-<p>获取到jquery对象之后即可获取dom对象。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> div = $(<span class="string">'#abc'</span>); <span class="comment">// jQuery对象</span></div><div class="line"><span class="keyword">var</span> divDom = div.get(<span class="number">0</span>); <span class="comment">// 假设存在div，获取第1个DOM元素</span></div><div class="line"><span class="keyword">var</span> another = $(divDom); <span class="comment">// 重新把DOM包装为jQuery对象</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>通过标签查找</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> ps = $(<span class="string">'p'</span>); <span class="comment">// 返回所有&lt;p&gt;节点</span></div><div class="line">ps.length; <span class="comment">// 数一数页面有多少个&lt;p&gt;节点</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>通过class查找</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> a = $(<span class="string">'.red'</span>); <span class="comment">// 所有节点包含`class="red"`都将返回</span></div><div class="line"><span class="comment">// 例如:</span></div><div class="line"><span class="comment">// &lt;div class="red"&gt;...&lt;/div&gt;</span></div><div class="line"><span class="comment">// &lt;p class="green red"&gt;...&lt;/p&gt;</span></div><div class="line"><span class="comment">//查找多个class属性的dom</span></div><div class="line"><span class="keyword">var</span> a = $(<span class="string">'.red.green'</span>); <span class="comment">// 注意没有空格！</span></div><div class="line"><span class="comment">// 符合条件的节点：</span></div><div class="line"><span class="comment">// &lt;div class="red green"&gt;...&lt;/div&gt;</span></div><div class="line"><span class="comment">// &lt;div class="blue green red"&gt;...&lt;/div&gt;</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>通过属性查找</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> email = $(<span class="string">'[name=email]'</span>); <span class="comment">// 找出&lt;??? name="email"&gt;</span></div><div class="line"><span class="keyword">var</span> passwordInput = $(<span class="string">'[type=password]'</span>); <span class="comment">// 找出&lt;??? type="password"&gt;</span></div><div class="line"><span class="keyword">var</span> a = $(<span class="string">'[items="A B"]'</span>); <span class="comment">// 找出&lt;??? items="A B"&gt;</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>组合查找</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> emailInput = $(<span class="string">'input[name=email]'</span>); <span class="comment">// 不会找出&lt;div name="email"&gt;</span></div></pre></td></tr></table></figure>
-</li>
-</ol>
-<ul>
-<li><p>层级选择器</p>
-<p>首先要定位父节点，才能选择相应的子节点，这样避免了页面其他不相关的元素，缩小了选择范围。</p>
-<p>如果两个DOM元素具有层级关系（只要是包涵关系都是层级关系），就可以用<code>$(&#39;ancestor descendant&#39;)</code>来选择，层级之间用空格隔开：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">&lt;!-- HTML结构 --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"testing"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">ul</span> <span class="attr">class</span>=<span class="string">"lang"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"lang-javascript"</span>&gt;</span>JavaScript<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"lang-python"</span>&gt;</span>Python<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"lang-lua"</span>&gt;</span>Lua<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">ul</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div></pre></td></tr></table></figure>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$(<span class="string">'ul.lang li.lang-javascript'</span>); <span class="comment">// [&lt;li class="lang-javascript"&gt;JavaScript&lt;/li&gt;]</span></div><div class="line">$(<span class="string">'div.testing li.lang-javascript'</span>); <span class="comment">// [&lt;li class="lang-javascript"&gt;JavaScript&lt;/li&gt;]</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>父子选择器</p>
-<p>两个元素必须是父子关系才行（直接包涵不能隔代）。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$(<span class="string">'ul.lang&gt;li.lang-javascript'</span>); <span class="comment">// 可以选出[&lt;li class="lang-javascript"&gt;JavaScript&lt;/li&gt;]</span></div><div class="line">$(<span class="string">'div.testing&gt;li.lang-javascript'</span>); <span class="comment">// [], 无法选出，因为&lt;div&gt;和&lt;li&gt;不构成父子关系</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>过滤器</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">$(<span class="string">'ul.lang li'</span>); <span class="comment">// 选出JavaScript、Python和Lua 3个节点</span></div><div class="line"></div><div class="line">$(<span class="string">'ul.lang li:first-child'</span>); <span class="comment">// 仅选出JavaScript</span></div><div class="line">$(<span class="string">'ul.lang li:last-child'</span>); <span class="comment">// 仅选出Lua</span></div><div class="line">$(<span class="string">'ul.lang li:nth-child(2)'</span>); <span class="comment">// 选出第N个元素，N从1开始</span></div><div class="line">$(<span class="string">'ul.lang li:nth-child(even)'</span>); <span class="comment">// 选出序号为偶数的元素</span></div><div class="line">$(<span class="string">'ul.lang li:nth-child(odd)'</span>); <span class="comment">// 选出序号为奇数的元素</span></div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h4 id="查找与过滤"><a href="#查找与过滤" class="headerlink" title="查找与过滤"></a>查找与过滤</h4><ul>
-<li><p>查找</p>
-<p>当我们那个某个dom的jquery对象之后，我们可以通过这个对象进行纵向或者横向查找它的兄弟，父子节点。</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">&lt;!-- HTML结构 --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">ul</span> <span class="attr">class</span>=<span class="string">"lang"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"js dy"</span>&gt;</span>JavaScript<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"dy"</span>&gt;</span>Python<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">li</span> <span class="attr">id</span>=<span class="string">"swift"</span>&gt;</span>Swift<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"dy"</span>&gt;</span>Scheme<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">li</span> <span class="attr">name</span>=<span class="string">"haskell"</span>&gt;</span>Haskell<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></div></pre></td></tr></table></figure>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//通过find查找子节点</span></div><div class="line"><span class="keyword">var</span> ul = $(<span class="string">'ul.lang'</span>); <span class="comment">// 获得&lt;ul&gt;</span></div><div class="line"><span class="keyword">var</span> dy = ul.find(<span class="string">'.dy'</span>); <span class="comment">// 获得JavaScript, Python, Scheme</span></div><div class="line"><span class="keyword">var</span> swf = ul.find(<span class="string">'#swift'</span>); <span class="comment">// 获得Swift</span></div><div class="line"><span class="keyword">var</span> hsk = ul.find(<span class="string">'[name=haskell]'</span>); <span class="comment">// 获得Haskell</span></div><div class="line"><span class="comment">//获取父节点</span></div><div class="line"><span class="keyword">var</span> swf = $(<span class="string">'#swift'</span>); <span class="comment">// 获得Swift</span></div><div class="line"><span class="keyword">var</span> parent = swf.parent(); <span class="comment">// 获得Swift的上层节点&lt;ul&gt;</span></div><div class="line"><span class="keyword">var</span> a = swf.parent(<span class="string">'div.red'</span>); <span class="comment">// 从Swift的父节点开始向上查找，直到找到某个符合条件的节点并返回</span></div><div class="line"><span class="comment">//查找兄弟节点</span></div><div class="line"><span class="keyword">var</span> swift = $(<span class="string">'#swift'</span>);</div><div class="line">swift.next(); <span class="comment">// Scheme</span></div><div class="line">swift.next(<span class="string">'[name=haskell]'</span>); <span class="comment">// Haskell，因为Haskell是后续第一个符合选择器条件的节点</span></div><div class="line">swift.prev(); <span class="comment">// Python</span></div><div class="line">swift.prev(<span class="string">'.js'</span>); <span class="comment">// JavaScript，因为JavaScript是往前第一个符合选择器条件的节点</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>过滤</p>
-<ol>
-<li><p>通过filter过滤dom</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> langs = $(<span class="string">'ul.lang li'</span>); <span class="comment">// 拿到JavaScript, Python, Swift, Scheme和Haskell</span></div><div class="line"><span class="keyword">var</span> a = langs.filter(<span class="string">'.dy'</span>); <span class="comment">// 拿到JavaScript, Python, Scheme</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> langs = $(<span class="string">'ul.lang li'</span>); <span class="comment">// 拿到JavaScript, Python, Swift, Scheme和Haskell</span></div><div class="line">langs.filter(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.innerHTML.indexOf(<span class="string">'S'</span>) === <span class="number">0</span>; <span class="comment">// 这里的this代表dom对象</span></div><div class="line">&#125;); <span class="comment">// 拿到Swift, Scheme</span></div></pre></td></tr></table></figure>
-</li>
-</ol>
-</li>
-</ul>
-<h4 id="操作DOM"><a href="#操作DOM" class="headerlink" title="操作DOM"></a>操作DOM</h4><ul>
-<li><p>修改dom的内容</p>
-<p>jQuery对象的<code>text()</code>和<code>html()</code>方法分别获取节点的文本和原始HTML文本</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment">&lt;!-- HTML结构 --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">ul</span> <span class="attr">id</span>=<span class="string">"test-ul"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">li</span> <span class="attr">class</span>=<span class="string">"js"</span>&gt;</span>JavaScript<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">li</span> <span class="attr">name</span>=<span class="string">"book"</span>&gt;</span>Java &amp;amp; JavaScript<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="javascript"></span></div><div class="line">	$(<span class="string">'#test-ul li[name=book]'</span>).text(); <span class="comment">// 'Java &amp; JavaScript'</span></div><div class="line">	$(<span class="string">'#test-ul li[name=book]'</span>).html(); <span class="comment">// 'Java &amp;amp; JavaScript'</span></div><div class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div></pre></td></tr></table></figure>
-<p>无参数调用<code>text()</code>是获取文本，传入参数就变成设置文本，HTML也是类似操作，</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$(<span class="string">'#test-ul li[name=book]'</span>).text(<span class="string">'你好'</span>);</div></pre></td></tr></table></figure>
-<p>由于jquery对象包含了可能不只一个对象，所以它的方法会作用在每一个dom对象上，即使没有对象也不会报错。</p>
-</li>
-<li><p>添加新的dom</p>
-<p>通过append方法可以添加dom，对于之前html页面：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> ul = $(<span class="string">'#test-ul'</span>);<span class="comment">//拿到父节点的对象</span></div><div class="line">ul.append(<span class="string">'&lt;li&gt;&lt;span&gt;Haskell&lt;/span&gt;&lt;/li&gt;'</span>); <span class="comment">//添加dom对象</span></div><div class="line"><span class="comment">// 创建DOM对象:</span></div><div class="line"><span class="keyword">var</span> ps = <span class="built_in">document</span>.createElement(<span class="string">'li'</span>);</div><div class="line">ps.innerHTML = <span class="string">'&lt;span&gt;Pascal&lt;/span&gt;'</span>;</div><div class="line"><span class="comment">// 添加DOM对象:</span></div><div class="line">ul.append(ps);</div><div class="line"></div><div class="line"><span class="comment">// 添加jQuery对象:不过会先删除原有的对象</span></div><div class="line">ul.append($(<span class="string">'.js'</span>));</div><div class="line"></div><div class="line"><span class="comment">// 添加函数对象:</span></div><div class="line">ul.append(<span class="function"><span class="keyword">function</span> (<span class="params">index, html</span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> <span class="string">'&lt;li&gt;&lt;span&gt;Language - '</span> + index + <span class="string">'&lt;/span&gt;&lt;/li&gt;'</span>;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
-</li>
-<li><p>删除节点</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> li = $(<span class="string">'#test-ul&gt;li'</span>);</div><div class="line">li.remove(); <span class="comment">// 所有&lt;li&gt;全被删除</span></div></pre></td></tr></table></figure>
-<p>​</p>
-</li>
-</ul>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -2081,7 +2116,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">18</span>
+                <span class="site-state-item-count">20</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -2092,7 +2127,7 @@
             
             <div class="site-state-item site-state-categories">
               
-                <span class="site-state-item-count">9</span>
+                <span class="site-state-item-count">10</span>
                 <span class="site-state-item-name">分类</span>
               
             </div>
@@ -2103,7 +2138,7 @@
             
             <div class="site-state-item site-state-tags">
               
-                <span class="site-state-item-count">28</span>
+                <span class="site-state-item-count">30</span>
                 <span class="site-state-item-name">标签</span>
               
             </div>
