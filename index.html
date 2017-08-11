@@ -271,6 +271,197 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/08/11/netty/基于netty的rpc框架/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="帅到没朋友">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/08/11/netty/基于netty的rpc框架/" itemprop="url">基于netty的rpc框架</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-11T20:10:33+08:00">
+                2017-08-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/netty框架/" itemprop="url" rel="index">
+                    <span itemprop="name">netty框架</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="基于netty的rpc框架"><a href="#基于netty的rpc框架" class="headerlink" title="基于netty的rpc框架"></a>基于netty的rpc框架</h2><p>[TOC]</p>
+<h4 id="如果你已经对以下东东有所了解，那么你就可以完成一个rpc框架了"><a href="#如果你已经对以下东东有所了解，那么你就可以完成一个rpc框架了" class="headerlink" title="如果你已经对以下东东有所了解，那么你就可以完成一个rpc框架了"></a>如果你已经对以下东东有所了解，那么你就可以完成一个rpc框架了</h4><ul>
+<li>Java的反射技术</li>
+<li>java的动态代理机制</li>
+<li>基于nio的框架netty</li>
+<li>全世界最好的框架-spring</li>
+<li>java的序列化</li>
+</ul>
+<h4 id="神马是rpc？"><a href="#神马是rpc？" class="headerlink" title="神马是rpc？"></a>神马是rpc？</h4><ul>
+<li><p>在这个大数据时代，很多公司的服务器都是以集群的方式存在的。在我们传统的mvc后台开发中，我们就需要把不同层的服务部署到不同的服务器上面，这个每个服务器的的压力就会比较小了。</p>
+<p>但是这样也会带来一个问题——我在这台机器上如何才能调用到另一台机器的代码呢？这是个问题。</p>
+<p>我们先来举个栗子：</p>
+<p><img src="http://img.blog.csdn.net/20170810174003466?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>比如我们在一个传统mvc项目中，我们有一个UserController处理用户的请求，假如它长的这个样子：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@RestController</span></div><div class="line"><span class="meta">@RequestMapping</span>(value = <span class="string">"/user"</span>)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserController</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@Autowired</span></div><div class="line">    UserService userService;</div><div class="line"></div><div class="line">    <span class="meta">@RequestMapping</span>(value = <span class="string">"/current"</span>)</div><div class="line">    <span class="function"><span class="keyword">public</span> AjaxResponse <span class="title">login</span><span class="params">(String name,String password)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> AjaxResponse.success(userService.login(name,password));</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>正常情况下，这个UserService的实现肯定是在同一个项目或者是本地的，早就已经被加入到spring容器中了，不过加入我们为了减少服务器的压力，我们将UserService的实现放到另一台服务器上，加入我们有一个膜法，可以在本地的Controller像调用本地方法一样调用另一台的userServiceImpl就好了，Rpc就是这样一种技术。</p>
+</li>
+</ul>
+<h4 id="实现思路"><a href="#实现思路" class="headerlink" title="实现思路"></a>实现思路</h4><ul>
+<li><p>表面上看这是一个很难完成的任务，本机怎么可能可以调用到远程的方法呢？不过如果我们这个任务拆分开来，就会发现只要一步一步来，其实还是挺简单的。</p>
+<blockquote>
+<p>我们可以换一种思路，既然直接调用不行，我们可以曲线救国呀，我们只要把调用方法的对象的名称，方法的名字，方法的参数与方法的类型都通过网络发送到另一台机器上，另一条机器接收到之后根据请求信息调用该对象的方法，然后在把执行结果通过网路直接返回回来不就ok了。其实，rpc框架的大体思路就是如此。</p>
+</blockquote>
+</li>
+<li><p>大体实现流程如下：</p>
+<ol>
+<li>通过java的动态代理机制为我们UserService创建代理对象，在代理对象执行方法的时候实际上已经被我们定制的方法拦截。</li>
+<li>在拦截的逻辑里面，我们在获取到调用的方法的所有接口，方法名，参数集合，参数类型集合后封装到一个JavaBean——request中去，然后我们将这个对象序列化之后通过网络传输到另一台机器上。</li>
+<li>另一台机器接受到这个网络请求后，将数据反序列化为Request对象，从而了解我们请求的是具体是什么对象的什么方法，然后服务器通过反射的方式调用，并将执行结果通过另一个JavaBean——Response返回。</li>
+<li>本机收到服务端的返回。整个rpc调用就完成了。</li>
+</ol>
+</li>
+<li><p>如下图所示，由于画图水平有限，不过大致就是这个意思：</p>
+<p><img src="http://img.blog.csdn.net/20170811092454428?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+</li>
+</ul>
+<h4 id="代码具体实现"><a href="#代码具体实现" class="headerlink" title="代码具体实现"></a>代码具体实现</h4><ol>
+<li><p>首先我们需要为我们的网络请求分装两个JavaBean，分别为Request与Response.。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//在Request中应有的属性</span></div><div class="line"><span class="keyword">private</span> String requestId;</div><div class="line"><span class="keyword">private</span> String className;</div><div class="line"><span class="keyword">private</span> String methodName;</div><div class="line"><span class="keyword">private</span> Class&lt;?&gt;[] parameterTypes;</div><div class="line"><span class="keyword">private</span> Object[] parameters;</div><div class="line"><span class="comment">//在response应该有的属性</span></div><div class="line"><span class="keyword">private</span> String requestId;</div><div class="line"><span class="keyword">private</span> Throwable error;</div><div class="line"><span class="keyword">private</span> Object result;</div></pre></td></tr></table></figure>
+</li>
+<li><p>创建RpcClient，封装我们的网络请求流程。其中最重要的是这个方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> Response <span class="title">send</span><span class="params">(Request request)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line">        ClientBootstrap bootstrap = <span class="keyword">new</span> ClientBootstrap();</div><div class="line">        ExecutorService boss = Executors.newCachedThreadPool();</div><div class="line">        ExecutorService work = Executors.newCachedThreadPool();</div><div class="line"></div><div class="line">        bootstrap.setFactory(<span class="keyword">new</span> NioClientSocketChannelFactory(boss,work));</div><div class="line">        bootstrap.setPipelineFactory(<span class="keyword">new</span> ChannelPipelineFactory() &#123;</div><div class="line">            <span class="meta">@Override</span></div><div class="line">            <span class="function"><span class="keyword">public</span> ChannelPipeline <span class="title">getPipeline</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</div><div class="line">                ChannelPipeline pipeline = Channels.pipeline();</div><div class="line">                pipeline.addLast(<span class="string">"decoder"</span>,<span class="keyword">new</span> ResponseDecoder());</div><div class="line">                pipeline.addLast(<span class="string">"encoder"</span>,<span class="keyword">new</span> RequestEncoder());</div><div class="line">                pipeline.addLast(<span class="string">"handler"</span>,RpcClient.<span class="keyword">this</span>);</div><div class="line">                <span class="keyword">return</span> pipeline;</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">        ChannelFuture connect = bootstrap.connect(<span class="keyword">new</span> InetSocketAddress(address, port)).sync();</div><div class="line">        connect.getChannel().write(request).sync();</div><div class="line">  		<span class="comment">//阻塞线程直到完成请求或者请求失败</span></div><div class="line">        <span class="keyword">synchronized</span> (obj)&#123;</div><div class="line">            obj.wait();</div><div class="line">        &#125;</div><div class="line">        connect.getChannel().close().sync();</div><div class="line"></div><div class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.response;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>这里用netty3进行的网咯请求，这里<code>ResponseDecoder</code>与<code>RequestEncoder</code>是对Response与Request进行的序列化与反序列化，采用的谷歌的Protostuff序列化框架实现（为啥不用java自带的序列化工具呢？因为java自定的序列化附带了很多其他信息，序列化的字节长度比谷歌的长好几倍，所以是为了节约带宽，同时Protostuff的序列化支持多种编程语言）</p>
+</li>
+<li><p>创建代理的工具类，返回代理对象。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> &lt;T&gt;<span class="function">T <span class="title">proxy</span><span class="params">(Class&lt;?&gt; clazz)</span></span>&#123;</div><div class="line">        <span class="keyword">return</span> (T) Proxy.newProxyInstance(clazz.getClassLoader(), <span class="keyword">new</span> Class&lt;?&gt;[] &#123; clazz &#125;, <span class="keyword">new</span> InvocationHandler() &#123;</div><div class="line">            <span class="function"><span class="keyword">public</span> Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span> <span class="keyword">throws</span> Throwable </span>&#123;</div><div class="line">                Request request = <span class="keyword">new</span> Request();</div><div class="line">                request.setClassName(method.getDeclaringClass().getName());</div><div class="line">                request.setMethodName(method.getName());</div><div class="line">                request.setParameters(args);</div><div class="line">                request.setRequestId(UUID.randomUUID().toString());</div><div class="line">                request.setParameterTypes(method.getParameterTypes());</div><div class="line">                RpcClient client =<span class="keyword">new</span> RpcClient(address,port);</div><div class="line">              	<span class="comment">//通过封装的网络框架进行网络请求</span></div><div class="line">                Response response = client.send(request);</div><div class="line">                <span class="keyword">if</span> (response.getError()!=<span class="keyword">null</span>)&#123;</div><div class="line">                    <span class="keyword">throw</span> response.getError();</div><div class="line">                &#125;</div><div class="line">                <span class="keyword">else</span>&#123;</div><div class="line">                    <span class="keyword">return</span> response;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;);</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+</li>
+<li><p>服务端在开启服务的时候就需要通过spring扫描所有的service实现类，将其装进spring的容器中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setApplicationContext</span><span class="params">(ApplicationContext applicationContext)</span> <span class="keyword">throws</span> BeansException </span>&#123;</div><div class="line">        Map&lt;String, Object&gt; beansWithAnnotation = applicationContext.getBeansWithAnnotation(RPCService.class);</div><div class="line">        <span class="keyword">for</span>(Map.Entry&lt;String,Object&gt; entry :beansWithAnnotation.entrySet())&#123;</div><div class="line">            String interfaceName = entry.getValue().getClass()</div><div class="line">                    .getAnnotation(RPCService.class).value().getName();</div><div class="line">            serviceMap.put(interfaceName,entry.getValue());</div><div class="line">        &#125;</div><div class="line">        startServer();</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>需要发布的服务类都需要使用<code>@RPCService</code>注解，这是一个自定义的注解。</p>
+</li>
+<li><p>在服务端收到客户端的网络请求之后，我们就需要从spring容器中找到请求的服务类完成调用并返回执行结果。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">messageReceived</span><span class="params">(ChannelHandlerContext ctx, MessageEvent event)</span> <span class="keyword">throws</span> Exception </span>&#123;</div><div class="line">        Request request = (Request) event.getMessage();</div><div class="line">        Response response = <span class="keyword">new</span> Response();</div><div class="line">        <span class="comment">//调用请求类的请求方法执行并返回执行结果</span></div><div class="line">        Object invoke = <span class="keyword">null</span>;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            Object requestBean = serviceMap.get(request.getClassName());</div><div class="line">            Class&lt;?&gt; requestClazz = Class.forName(request.getClassName());</div><div class="line">            Method method = requestClazz.getMethod(request.getMethodName(), request.getParameterTypes());</div><div class="line">            invoke = method.invoke(requestBean, request.getParameters());</div><div class="line">            response.setRequestId(UUID.randomUUID().toString());</div><div class="line">            response.setResult(invoke);</div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">            response.setError(e);</div><div class="line">            response.setRequestId(UUID.randomUUID().toString());</div><div class="line">        &#125;</div><div class="line">        System.out.println(request+<span class="string">""</span>+response);</div><div class="line">        <span class="comment">//返回执行结果</span></div><div class="line">        ctx.getChannel().write(response);</div><div class="line"></div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><ul>
+<li>整体的流程还是比较简单的，就是具体实现的时候会有一些细节问题需要好好处理。虽然是第一次写这种轮子程序，不过感觉还是不错的。完整代码已上传到<a href="https://github.com/forever-zs/MiniRpc" target="_blank" rel="external">我的GitHub</a>仓库里面，有兴趣的小伙伴可以去看看。</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/08/06/zookeeper/动态感知服务器上下线/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1918,160 +2109,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/12/前端框架/JavaScript学习/JavaScript的Ajax/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="forever_zs">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/head.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="帅到没朋友">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/07/12/前端框架/JavaScript学习/JavaScript的Ajax/" itemprop="url">JavaScript的跨域请求</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-12T20:10:33+08:00">
-                2017-07-12
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/javascript/" itemprop="url" rel="index">
-                    <span itemprop="name">javascript</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="JavaScript的跨域请求"><a href="#JavaScript的跨域请求" class="headerlink" title="JavaScript的跨域请求"></a>JavaScript的跨域请求</h2><p>[TOC]</p>
-<h4 id="神马是跨域请求"><a href="#神马是跨域请求" class="headerlink" title="神马是跨域请求"></a>神马是跨域请求</h4><p>​    因为浏览器的同源策略，默认情况下，JavaScript在发送AJAX请求时，URL的域名必须和当前页面完全一致。</p>
-<p>也就是说，请求ajax的url，域名要相同（<code>www.example.com</code>和<code>example.com</code>不同），协议要相同（<code>http</code>和<code>https</code>不同），端口号要相同（默认是<code>:80</code>端口，它和<code>:8080</code>就不同）。</p>
-<h4 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h4><ol>
-<li><p>通过在同源域名下架设一个代理服务器来转发，JavaScript负责把请求发送到代理服务器。然后让代理服务器帮助我们完成请求。</p>
-</li>
-<li><p>通过JSONP，它有个限制，只能用GET请求，并且要求返回JavaScript。<strong>这种方式跨域实际上是利用了浏览器允许跨域引用JavaScript资源：</strong></p>
-</li>
-<li><p>通过CORS进行跨域请求。</p>
-<p>cros是提出的新的跨域策略：</p>
-<p><img src="http://img.blog.csdn.net/20170711102846192?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
-<p>Origin表示本域，也就是浏览器当前页面的域。当JavaScript向外域（如sina.com）发起请求后，浏览器收到响应后，首先检查<code>Access-Control-Allow-Origin</code>是否包含本域（或者<strong>*</strong>），如果是，则此次跨域请求成功，如果不是，则请求失败，JavaScript将无法获取到响应的任何数据。</p>
-<p>可见，跨域能否成功，取决于对方服务器是否愿意给你设置一个正确的<code>Access-Control-Allow-Origin</code>，决定权始终在对方手中。</p>
-<p>​</p>
-</li>
-</ol>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -2116,7 +2158,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">20</span>
+                <span class="site-state-item-count">21</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -2127,7 +2169,7 @@
             
             <div class="site-state-item site-state-categories">
               
-                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-count">11</span>
                 <span class="site-state-item-name">分类</span>
               
             </div>
@@ -2138,7 +2180,7 @@
             
             <div class="site-state-item site-state-tags">
               
-                <span class="site-state-item-count">30</span>
+                <span class="site-state-item-count">32</span>
                 <span class="site-state-item-name">标签</span>
               
             </div>
