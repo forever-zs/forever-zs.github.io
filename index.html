@@ -271,6 +271,502 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/08/22/Hbase/Hbase的架构简单解析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="帅到没朋友">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/08/22/Hbase/Hbase的架构简单解析/" itemprop="url">Hbase的架构简单解析</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-22T17:10:33+08:00">
+                2017-08-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Hbase/" itemprop="url" rel="index">
+                    <span itemprop="name">Hbase</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="Hbase的架构简单解析"><a href="#Hbase的架构简单解析" class="headerlink" title="Hbase的架构简单解析"></a>Hbase的架构简单解析</h2><p>[TOC]</p>
+<h4 id="Hbase内部的基本组成"><a href="#Hbase内部的基本组成" class="headerlink" title="Hbase内部的基本组成"></a>Hbase内部的基本组成</h4><ul>
+<li><p>Hbase的整体主要由zookeeper，Hmaster，HRegionServer，Hdfs文件系统组成。由这四部分共同完成数据的读取与写入。</p>
+</li>
+<li><p>我们知道，hbase有个很重要的特性，可以通过分布式集群存取海量数据，当数据量越来越多的时候通过增加集群主机的数量就可以将数据分散到不同的主机上，这是传统的数据库很难实现的，那么hbase是如何做到的呢？下面我们就来解析下hbase的基本架构原理。</p>
+</li>
+</ul>
+<h4 id="Hbase数据的存储方式"><a href="#Hbase数据的存储方式" class="headerlink" title="Hbase数据的存储方式"></a>Hbase数据的存储方式</h4><ul>
+<li><p>对hbase有一点了解的童鞋都应该知道，hbase不同与传统的数据库，它是一种列式存储的数据库，对于里面的每一张表，每一行的数据都有一个rowkey，在数据库中的数据都是按照rowkey顺序排列的。所以可以将每张表的数据按照rowkey进行划分：</p>
+<blockquote>
+<p>不同的范围的数据划分到不同的地方（hbase中的这个地方被称为HRegion），不同的HRegion被放在不同的主机上，当查询数据的时候，只要根据rowkey先找到数据在那个范围的HRegion中，就可以直接到那个HRegion中找到数据，所以查询效率会比传统的数据库快很多。</p>
+</blockquote>
+<p><img src="http://www.uml.org.cn/zjjs/images/2012111323.png" alt="img"></p>
+<p>基本就像上图这样，随着数据不断增多，Region也会不断的增多（对表的划分增多），不同的Region由多个不同的RegionServer管理着。</p>
+</li>
+</ul>
+<h4 id="Hbase读写数据的基本流程"><a href="#Hbase读写数据的基本流程" class="headerlink" title="Hbase读写数据的基本流程"></a>Hbase读写数据的基本流程</h4><ul>
+<li><p>写数据</p>
+<p><img src="http://img.blog.csdn.net/20170822151914513?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<ol>
+<li>首先要找到管理相应Region的RegionServer（但是如何找到RegionServer的呢？这个会在读取数据哪里解释），然后发送写数据的请求。</li>
+<li>当RegionServer收到请求后，首先会将请求写入到HLog中（防止数据意外丢失，很多系统都是利用的这种机制）。</li>
+<li>在Hlog写入完成之后，在找到相应的Region将数据写入。</li>
+</ol>
+<p>那么问题来了？在Region内部又是如何将数据写入到hdfs中的呢？这里就涉及到Region内部的数据持久化机制了：</p>
+<p><img src="http://img.blog.csdn.net/20170822153828380?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>在Region内部，当数据操作请求由RegionServer传到Region的时候，Region中包含了很多的Store（每个Store对应了一个Table在这个Region中的一个Column Family，即每个Column Family就是一个集中的存储单元），写入数据根据具体在那个Column Family，将数据传到具体的Store中。数据传输流程如下：</p>
+<ol>
+<li>RegionServer首先会将数据写入到MemStore内存中，这时返回客户端通知说已经写入成功了。</li>
+<li>当MemStore中的数据达到一定大小的时候，会有一次flush的过程，在此过程中，数据会被写入StoreFile文件中。然后StoreFile又会被序列化为HFile文件。（备注：在写入MemStore的时候会被插入到指定的顺序中，所以是有序的）</li>
+<li>HFile之后通过Hdfs的api上传到hdfs中。</li>
+</ol>
+</li>
+<li><p>读数据流程</p>
+<p>首先我们需要思考的是，要想读到数据，首先客户端肯定需要知道数据在哪吧。（写数据同样也是要先知道数据在哪），我们已经知道，hbase的数据都划分到了region中，那么我们如何找到相应的region呢？整体流程如下图：</p>
+<p><img src="http://img.blog.csdn.net/20170822160744968?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<ol>
+<li>首先我们要通过zookeeper找找到-root-的位置，这个root本质上也是一个region，不过里面存放的是不同范围的rowkey应该去那个RegionServer的<code>.meta.</code>中去查找</li>
+<li>通过请求<code>.meta.</code>我们知道了我们需要的region在哪个RegionServer上，然后就可以去那个regionServer上去读数据了。</li>
+</ol>
+</li>
+</ul>
+<p>注1：这里其实有个问题，为啥不直接把数据的region所在的信息写在-root-中，这样不就少一个流程了。加快了访问速度吗？主要是为了保存的数据量考虑，由于Region的数量可能会有很多，而-root-只能由一个，所以防止-root-的内存被撑爆，所以多加了一层。</p>
+<p>注2：不过一般公司的数据真的有这么多吗？应该是没有的吧，因而在HBase 0.96以后去掉了-ROOT- Table，只剩下这个特殊的目录表叫做Meta Table(hbase:meta)，它存储了集群中所有用户HRegion的位置信息，而ZooKeeper的节点中(/hbase/meta-region-server)存储的则直接是这个Meta Table的位置</p>
+<h4 id="Hmaster是干嘛的？"><a href="#Hmaster是干嘛的？" class="headerlink" title="Hmaster是干嘛的？"></a>Hmaster是干嘛的？</h4><ul>
+<li><p>在上面的读写流程中，我们已经提到了HRegionServer，hdfs，zookeeper的作用了，但是一直都没有提到Hmaster，这个听上去很像老大的东西到底是干嘛的呢？难道只是打酱油的？Ofcource Not！</p>
+<p><img src="http://img.blog.csdn.net/20170822161823959?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>之前我们虽然已经知道了数据是如何存入的，但是有一个问题一直没说，那就是hbase为啥可以管理海量数据呢？当数据越来越多的时候，是谁来负责将数据进行划分为更小的区域的呢？那就是一直在默默奉献额老大——HMaster。</p>
+</li>
+<li><p>Hmaster是如何管理数据的呢？</p>
+<ol>
+<li><p>清理冗余的数据</p>
+<p>当同一region的数据块达到四块的时候，Hmaster会对其进行一次数据合并，清理期中的冗余数据。合并之后的数据会小于256M。</p>
+</li>
+<li><p>HRegion Split</p>
+<ul>
+<li>最初，一个Table只有一个HRegion，随着数据写入增加，如果一个HRegion到达一定的大小，就需要Split成两个HRegion，这个大小由hbase.hregion.max.filesize指定。这个Split过程就是由Hmaster完成的。</li>
+<li>当split时，两个新的HRegion会在同一个HRegionServer中创建，它们各自包含父HRegion一半的数据，当Split完成后，父HRegion会下线，而新的两个子HRegion会向HMaster注册上线，处于负载均衡的考虑，这两个新的HRegion可能会被HMaster分配到其他的HRegionServer中。</li>
+</ul>
+</li>
+<li><p>当HRegionServer宕机之后，hmaster可以读取hlog，将数据在发送给其他RegionServer进行数据恢复。并修改<code>.meta.</code></p>
+</li>
+</ol>
+<p>注：RegionServer不管理Hbase的元数据，元数据由Zookeeper管理。</p>
+</li>
+</ul>
+<h4 id="总结一下"><a href="#总结一下" class="headerlink" title="总结一下"></a>总结一下</h4><ul>
+<li><p>Hbase中各个主要部分的功能：</p>
+<p><img src="http://www.blogjava.net/images/blogjava_net/dlevin/HBaseArch1.jpg" alt="img"></p>
+<ol>
+<li><p>Hmater</p>
+<blockquote>
+<ul>
+<li>在Region Split后，负责新Region的分配； </li>
+<li>新机器加入时，管理HRegion Server的负载均衡，调整Region分布</li>
+<li>在HRegion Server宕机后，负责失效HRegion Server 上的Regions迁移。</li>
+</ul>
+</blockquote>
+</li>
+<li><p>Region Server</p>
+<blockquote>
+<ul>
+<li>Region server维护Master分配给它的region，处理对这些region的IO请求</li>
+<li>HRegion Server管理了很多table的分区，也就是region。</li>
+</ul>
+</blockquote>
+</li>
+<li><p>zookeeper</p>
+<blockquote>
+<ul>
+<li>ZooKeeper为HBase集群提供协调服务，它管理着HMaster和HRegionServer的状态(available/alive等)，并且会在它们宕机时通知给HMaster</li>
+<li>zookeeper中管理着hbase的元数据，例如-root-的位置所在。</li>
+</ul>
+</blockquote>
+</li>
+<li><p>hdfs</p>
+<blockquote>
+<ul>
+<li>数据文件的存放处。由于其本身的分布式存储机制，所以数据文件很安全。</li>
+<li>hadoop的datanode最好和region在同一主机上，方便读取数据。尽量避免网络数据传输。</li>
+</ul>
+</blockquote>
+</li>
+</ol>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/08/20/Hbase/Hbase入门/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="帅到没朋友">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/08/20/Hbase/Hbase入门/" itemprop="url">Hbase入门</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-20T20:10:33+08:00">
+                2017-08-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Hbase/" itemprop="url" rel="index">
+                    <span itemprop="name">Hbase</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="Hbase入门"><a href="#Hbase入门" class="headerlink" title="Hbase入门"></a>Hbase入门</h2><p>[TOC]</p>
+<h4 id="Hbase是干嘛的？"><a href="#Hbase是干嘛的？" class="headerlink" title="Hbase是干嘛的？"></a>Hbase是干嘛的？</h4><ul>
+<li>HBASE是一个高可靠性、高性能、面向列、可伸缩的分布式存储系统。其主要作用是通过分布式的集群系统进行海量数据的存储与处理。其主要的优点有：<ol>
+<li>线性扩展，随着数据量增多可以通过节点扩展进行支撑</li>
+<li>数据存在hdfs上面，备份机制健全</li>
+<li>通过zookeeper协调查找数据，读取速度快。</li>
+<li>良好的数据备份与恢复机制，数据安全性由保障。</li>
+</ol>
+</li>
+</ul>
+<h4 id="Hbase的安装与配置"><a href="#Hbase的安装与配置" class="headerlink" title="Hbase的安装与配置"></a>Hbase的安装与配置</h4><ol>
+<li><p>下载安装包并解压，然后修改环境变量</p>
+</li>
+<li><p>修改hbase-env.sh配置文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"># The java implementation to use.  Java 1.7+ required.</div><div class="line">export JAVA_HOME=/usr/local/soft/jdk1.8.0_144</div><div class="line"># Extra Java CLASSPATH elements.  Optional.</div><div class="line">export HBASE_CLASSPATH=/usr/local/soft/hbase/conf</div><div class="line">export JAVA_CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar</div><div class="line">export HBASE_OPTS=&quot;-XX:+UseConcMarkSweepGC&quot;</div><div class="line"># 告诉habse用我们自己配置的zookeeper</div><div class="line"> export HBASE_MANAGES_ZK=false</div></pre></td></tr></table></figure>
+</li>
+<li><p>修改hbase-site.xml</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.master<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">value</span>&gt;</span>mini1:60000<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.master.maxclockskew<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">value</span>&gt;</span>180000<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.rootdir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">value</span>&gt;</span>hdfs://mini1:9000/hbase<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.zookeeper.property.clientPort<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>2181<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">description</span>&gt;</span>Property from ZooKeeper's config zoo.cfg.<span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line"> 	<span class="comment">&lt;!--是否采用分布式策略--&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.cluster.distributed<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">value</span>&gt;</span>true<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">  	<span class="comment">&lt;!--zookeeper所在位置--&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.zookeeper.quorum<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">value</span>&gt;</span>mini5,mini6,mini7<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.zookeeper.property.dataDir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">value</span>&gt;</span>/home/hadoop/hbase/tmp/zookeeper<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></div></pre></td></tr></table></figure>
+</li>
+<li><p>启动hbase</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">start-hbase.sh</div></pre></td></tr></table></figure>
+</li>
+<li><p>打开shell交互式命令行</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">hbase shell</div><div class="line"><span class="meta">#</span> web管理打开地址 http://mini1:16030</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h4 id="常见错误"><a href="#常见错误" class="headerlink" title="常见错误"></a>常见错误</h4><ol>
+<li><p>发现<code>ERROR: org.apache.hadoop.hbase.ipc.ServerNotRunningYetException: Server is not running yet</code>，一般是hdfs正处于安全模式，可以直接关闭（感觉不太好）:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">hadoop dfsadmin -safemode leave</div></pre></td></tr></table></figure>
+<p>​</p>
+</li>
+</ol>
+<h4 id="基本数据模型"><a href="#基本数据模型" class="headerlink" title="基本数据模型"></a>基本数据模型</h4><ol>
+<li><p><strong>Row Key</strong></p>
+<blockquote>
+<p>key是用来检索记录的主键,，通过row key来定位数据。是最重要的数据模型，当插入数据的时候，数据会按照row key进行排序，插入到合适的位置。</p>
+</blockquote>
+</li>
+<li><p><strong>Columns Family</strong></p>
+<blockquote>
+<p>HBASE表中的每个列，都归属于某个列族。列族是表的schema的一部 分(而列不是)，必须在使用表之前定义。列名都以列族作为前缀。例如 courses:history，courses:math都属于courses 这个列族。</p>
+</blockquote>
+</li>
+<li><p><strong>Cell</strong></p>
+<blockquote>
+<p>由{row key, columnFamily, version} 唯一确定的单元。cell中 的数据是没有类型的，全部是<strong>字节码</strong>形式存贮。</p>
+</blockquote>
+</li>
+<li><p><strong>TimeStamp</strong></p>
+<blockquote>
+<p>HBASE中通过rowkey和columns确定的为一个存贮单元称为cell。每个 cell都保存 着同一份数据的多个版本。版本通过时间戳来索引。时间戳的类型是 64位整型。时间戳可以由HBASE(在数据写入时自动 )赋值。</p>
+</blockquote>
+</li>
+</ol>
+<h4 id="Hbase的常用命令"><a href="#Hbase的常用命令" class="headerlink" title="Hbase的常用命令"></a>Hbase的常用命令</h4><table>
+<thead>
+<tr>
+<th><strong>名称</strong></th>
+<th><strong>命令表达式</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>创建表</strong></td>
+<td><strong>create ‘表名’, ‘列族名1’,’列族名2’,’</strong>列族名N’</td>
+</tr>
+<tr>
+<td><strong>查看所有表</strong></td>
+<td><strong>list</strong></td>
+</tr>
+<tr>
+<td><strong>描述表</strong></td>
+<td><strong>describe</strong>  ‘表名’</td>
+</tr>
+<tr>
+<td>判断表存在</td>
+<td><strong>exists</strong>  ’表名‘</td>
+</tr>
+<tr>
+<td>判断是否禁用启用表</td>
+<td><strong>is_enabled</strong> ‘表名’  <strong>is_disabled</strong> ‘表名’</td>
+</tr>
+<tr>
+<td><strong>添加记录      </strong></td>
+<td><strong>put</strong>   ‘表名’, ‘rowKey’, ‘列族 :列‘  ,  ‘值’</td>
+</tr>
+<tr>
+<td>查看记录rowkey下的所有数据</td>
+<td><strong>get   ‘</strong>表名’ , ‘rowKey’</td>
+</tr>
+<tr>
+<td><strong>查看表中的记录总数</strong></td>
+<td><strong>count   ‘表名’</strong></td>
+</tr>
+<tr>
+<td><strong>获取某个列族</strong></td>
+<td><strong>get</strong> ‘表名’,’rowkey’,’列族’</td>
+</tr>
+<tr>
+<td><strong>获取某个列族的某个列</strong></td>
+<td><strong>get</strong> ‘表名’,’rowkey’,’列族：列’</td>
+</tr>
+<tr>
+<td><strong>删除记录</strong></td>
+<td><strong>delete   **</strong>‘表名’ ,‘行名’ , ‘列族：列’</td>
+</tr>
+<tr>
+<td><strong>删除整行</strong></td>
+<td><strong>deleteall ‘**</strong>表名’,’rowkey’</td>
+</tr>
+<tr>
+<td><strong>删除一张表</strong></td>
+<td><strong>先要屏蔽该表，才能对该表进行删除</strong>  <strong>第一步 disable ‘表名’ ，第二步  drop ‘</strong>表名’</td>
+</tr>
+<tr>
+<td><strong>清空表</strong></td>
+<td><strong>truncate ‘</strong>表名’</td>
+</tr>
+<tr>
+<td><strong>查看所有记录</strong></td>
+<td><strong>scan “</strong>表名”</td>
+</tr>
+</tbody>
+</table>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/08/11/netty/基于netty的rpc框架/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1605,200 +2101,6 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/17/前端框架/node.js/node中的基本模块/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="forever_zs">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/head.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="帅到没朋友">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/07/17/前端框架/node.js/node中的基本模块/" itemprop="url">Node中的模块</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-17T00:00:00+08:00">
-                2017-07-17
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/node-js/" itemprop="url" rel="index">
-                    <span itemprop="name">node.js</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="Node中的模块"><a href="#Node中的模块" class="headerlink" title="Node中的模块"></a>Node中的模块</h2><p>[TOC]</p>
-<p>####常用内置对象</p>
-<ul>
-<li><p>global</p>
-<p>而在Node.js环境中，有唯一的全局对象，叫<code>global</code>，这个对象的属性和方法也和浏览器环境的<code>window</code>不同</p>
-</li>
-<li><p>process</p>
-<p>代表当前Node.js进程。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">&gt; process.version;</div><div class="line"><span class="string">'v5.2.0'</span></div><div class="line">&gt; process.platform;</div><div class="line"><span class="string">'darwin'</span></div><div class="line">&gt; process.arch;</div><div class="line"><span class="string">'x64'</span></div><div class="line">&gt; process.cwd(); <span class="comment">//返回当前工作目录</span></div><div class="line"><span class="string">'/Users/michael'</span></div><div class="line">&gt; process.chdir(<span class="string">'/private/tmp'</span>); <span class="comment">// 切换当前工作目录</span></div><div class="line"><span class="literal">undefined</span></div><div class="line">&gt; process.cwd();</div><div class="line"><span class="string">'/private/tmp'</span></div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h4 id="常用内置模块"><a href="#常用内置模块" class="headerlink" title="常用内置模块"></a>常用内置模块</h4><ul>
-<li><p>文件系统模块（服务端都要使用异步方法）</p>
-<ol>
-<li><p>异步读取文本文件</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> fs=<span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"><span class="comment">//在同级目录下的文本文件，当正常读取时，err参数为null，data参数为读取到的String。当读取发生错误时，err参数代表一个错误对象，data为undefined</span></div><div class="line">fs.readFile(<span class="string">'hello.txt'</span>,<span class="string">'utf-8'</span>,<span class="function"><span class="keyword">function</span>(<span class="params">err,data</span>)</span>&#123;</div><div class="line">    <span class="keyword">if</span>(err)&#123;</div><div class="line">        <span class="built_in">console</span>.log(err);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">else</span>&#123;</div><div class="line">        <span class="built_in">console</span>.log(data);</div><div class="line">    &#125;</div><div class="line">&#125;)</div></pre></td></tr></table></figure>
-</li>
-<li><p>异步读取二进制文件</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"><span class="comment">//当读取二进制文件时，不传入文件编码时，回调函数的data参数将返回一个Buffer对象。在Node.js中，Buffer对象就是一个包含零个或任意个字节的数组（注意和Array不同）。</span></div><div class="line">fs.readFile(<span class="string">'sample.png'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">err, data</span>) </span>&#123;</div><div class="line">    <span class="keyword">if</span> (err) &#123;</div><div class="line">        <span class="built_in">console</span>.log(err);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="built_in">console</span>.log(data);</div><div class="line">        <span class="built_in">console</span>.log(data.length + <span class="string">' bytes'</span>);</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
-<p>Buffer对象与String对象之间的转化</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Buffer -&gt; String</span></div><div class="line"><span class="keyword">var</span> text = data.toString(<span class="string">'utf-8'</span>);</div><div class="line"><span class="built_in">console</span>.log(text);</div><div class="line"><span class="comment">// String -&gt; Buffer</span></div><div class="line"><span class="keyword">var</span> buf = <span class="keyword">new</span> Buffer(text, <span class="string">'utf-8'</span>);</div><div class="line"><span class="built_in">console</span>.log(buf);</div></pre></td></tr></table></figure>
-</li>
-<li><p>同步读取文件</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"><span class="comment">//不接受回调函数，直接函数返回结果</span></div><div class="line"><span class="keyword">var</span> data = fs.readFileSync(<span class="string">'sample.txt'</span>, <span class="string">'utf-8'</span>);</div><div class="line"><span class="built_in">console</span>.log(data);</div></pre></td></tr></table></figure>
-</li>
-<li><p>异步写文件</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"><span class="keyword">var</span> data = <span class="string">'Hello, Node.js'</span>;</div><div class="line"><span class="comment">//如果传入的数据是String，默认按UTF-8编码写入文本文件，如果传入的参数是Buffer，则写入的是二进制文件。回调函数由于只关心成功与否，因此只需要一个err参数。</span></div><div class="line">fs.writeFile(<span class="string">'output.txt'</span>, data, <span class="function"><span class="keyword">function</span> (<span class="params">err</span>) </span>&#123;</div><div class="line">    <span class="keyword">if</span> (err) &#123;</div><div class="line">        <span class="built_in">console</span>.log(err);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'ok.'</span>);</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
-</li>
-<li><p>同步写文件</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"></div><div class="line"><span class="keyword">var</span> data = <span class="string">'Hello, Node.js'</span>;</div><div class="line">fs.writeFileSync(<span class="string">'output.txt'</span>, data);</div></pre></td></tr></table></figure>
-</li>
-<li><p>通过stat获取文件的基本信息</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"></div><div class="line">fs.stat(<span class="string">'sample.txt'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">err, stat</span>) </span>&#123;</div><div class="line">    <span class="keyword">if</span> (err) &#123;</div><div class="line">        <span class="built_in">console</span>.log(err);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="comment">// 是否是文件:</span></div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'isFile: '</span> + stat.isFile());</div><div class="line">        <span class="comment">// 是否是目录:</span></div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'isDirectory: '</span> + stat.isDirectory());</div><div class="line">        <span class="keyword">if</span> (stat.isFile()) &#123;</div><div class="line">            <span class="comment">// 文件大小:</span></div><div class="line">            <span class="built_in">console</span>.log(<span class="string">'size: '</span> + stat.size);</div><div class="line">            <span class="comment">// 创建时间, Date对象:</span></div><div class="line">            <span class="built_in">console</span>.log(<span class="string">'birth time: '</span> + stat.birthtime);</div><div class="line">            <span class="comment">// 修改时间, Date对象:</span></div><div class="line">            <span class="built_in">console</span>.log(<span class="string">'modified time: '</span> + stat.mtime);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
-</li>
-</ol>
-</li>
-<li><p>Stream模块</p>
-<p>流是一种抽象的数据结构。特点是数据是有序的，而且必须依次读取，或者依次写入，不能像Array那样随机定位。</p>
-<ol>
-<li><p>从文本流读取文本内容</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"></div><div class="line"><span class="comment">// 打开一个流:</span></div><div class="line"><span class="keyword">var</span> rs = fs.createReadStream(<span class="string">'hello.txt'</span>, <span class="string">'utf-8'</span>);</div><div class="line"><span class="comment">//data事件可能会有多次，每次的data只是一部分的数据</span></div><div class="line">rs.on(<span class="string">'data'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">data</span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'DATA:'</span>)</div><div class="line">    <span class="built_in">console</span>.log(data);</div><div class="line">&#125;);</div><div class="line"></div><div class="line">rs.on(<span class="string">'end'</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'END'</span>);</div><div class="line">&#125;);</div><div class="line"></div><div class="line">rs.on(<span class="string">'error'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">err</span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'ERROR: '</span> + err);</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
-</li>
-<li><p>以流的形式写入文件</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"></div><div class="line"><span class="keyword">var</span> ws1 = fs.createWriteStream(<span class="string">'output1.txt'</span>, <span class="string">'utf-8'</span>);</div><div class="line">ws1.write(<span class="string">'使用Stream写入文本数据...\n'</span>);</div><div class="line">ws1.write(<span class="string">'END.'</span>);</div><div class="line">ws1.end();</div><div class="line"></div><div class="line"><span class="keyword">var</span> ws2 = fs.createWriteStream(<span class="string">'output2.txt'</span>);</div><div class="line">ws2.write(<span class="keyword">new</span> Buffer(<span class="string">'使用Stream写入二进制数据...\n'</span>, <span class="string">'utf-8'</span>));</div><div class="line">ws2.write(<span class="keyword">new</span> Buffer(<span class="string">'END.'</span>, <span class="string">'utf-8'</span>));</div><div class="line">ws2.end();</div></pre></td></tr></table></figure>
-</li>
-<li><p>通过pipe快速复制文件</p>
-<p><code>pipe()</code>把一个文件流和另一个文件流串起来，这样源文件的所有数据就自动写入到目标文件里了</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"></div><div class="line"><span class="keyword">var</span> rs = fs.createReadStream(<span class="string">'sample.txt'</span>);</div><div class="line"><span class="keyword">var</span> ws = fs.createWriteStream(<span class="string">'copied.txt'</span>);</div><div class="line"></div><div class="line">rs.pipe(ws);</div></pre></td></tr></table></figure>
-</li>
-</ol>
-</li>
-<li><p>Http网络模块</p>
-<ol>
-<li><p>接受网络请求</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="comment">// 导入http模块:</span></div><div class="line"><span class="keyword">var</span> http = <span class="built_in">require</span>(<span class="string">'http'</span>);</div><div class="line"></div><div class="line"><span class="comment">// 创建http server，并传入回调函数:</span></div><div class="line"><span class="keyword">var</span> server = http.createServer(<span class="function"><span class="keyword">function</span> (<span class="params">request, response</span>) </span>&#123;</div><div class="line">    <span class="comment">// 回调函数接收request和response对象,</span></div><div class="line">    <span class="comment">// 获得HTTP请求的method和url:</span></div><div class="line">    <span class="built_in">console</span>.log(request.method + <span class="string">': '</span> + request.url);</div><div class="line">    <span class="comment">// 将HTTP响应200写入response, 同时设置Content-Type: text/html:</span></div><div class="line">    response.writeHead(<span class="number">200</span>, &#123;<span class="string">'Content-Type'</span>: <span class="string">'text/html'</span>&#125;);</div><div class="line">    <span class="comment">// 将HTTP响应的HTML内容写入response:</span></div><div class="line">    response.end(<span class="string">'&lt;h1&gt;Hello world!&lt;/h1&gt;'</span>);</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="comment">// 让服务器监听8080端口:</span></div><div class="line">server.listen(<span class="number">8080</span>);</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log(<span class="string">'Server is running at http://127.0.0.1:8080/'</span>);</div></pre></td></tr></table></figure>
-<p>​</p>
-</li>
-</ol>
-<p>​</p>
-</li>
-</ul>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/17/前端框架/node.js/node.js入门/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1962,153 +2264,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/14/前端框架/JavaScript学习/javaScript单引号与双引号的区别/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="forever_zs">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/head.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="帅到没朋友">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/07/14/前端框架/JavaScript学习/javaScript单引号与双引号的区别/" itemprop="url">JavaScrript单引号与双引号的区别</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-14T15:10:00+08:00">
-                2017-07-14
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/javascript/" itemprop="url" rel="index">
-                    <span itemprop="name">javascript</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="JavaScrript单引号与双引号的区别"><a href="#JavaScrript单引号与双引号的区别" class="headerlink" title="JavaScrript单引号与双引号的区别"></a>JavaScrript单引号与双引号的区别</h2><p>[TOC]</p>
-<p>测试代码：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> str = <span class="string">'This is Jack'</span>;  </div><div class="line"><span class="keyword">var</span> str2 = <span class="string">"This is Tom"</span>;  </div><div class="line"><span class="keyword">var</span> str3 = <span class="string">'This is "Rose"'</span>;  </div><div class="line"><span class="keyword">var</span> str4 = <span class="string">"This is 'LiLi'"</span>;  </div><div class="line"><span class="keyword">var</span> str5 = <span class="string">"This is \"Sun\""</span>;  </div><div class="line"><span class="keyword">var</span> str6 = <span class="string">'This is \'Mary\''</span>;  </div><div class="line"><span class="keyword">var</span> str7 = <span class="string">"This is \'Lucy\'"</span>;  </div><div class="line"><span class="keyword">var</span> str8 = <span class="string">'This is \"Rooney\"'</span>;  </div><div class="line"><span class="keyword">var</span> str9 = <span class="string">'This is \\Ronaldo\\'</span>;  </div><div class="line"><span class="built_in">console</span>.log(str);  </div><div class="line"><span class="built_in">console</span>.log(str2);  </div><div class="line"><span class="built_in">console</span>.log(str3);  </div><div class="line"><span class="built_in">console</span>.log(str4);  </div><div class="line"><span class="built_in">console</span>.log(str5);  </div><div class="line"><span class="built_in">console</span>.log(str6);  </div><div class="line"><span class="built_in">console</span>.log(str7);  </div><div class="line"><span class="built_in">console</span>.log(str8);  </div><div class="line"><span class="built_in">console</span>.log(str9);  </div><div class="line"></div><div class="line"><span class="comment">//显示结果</span></div><div class="line">This is Jack</div><div class="line"> This is Tom</div><div class="line">This is <span class="string">"Rose"</span></div><div class="line"> This is <span class="string">'LiLi'</span></div><div class="line"> This is <span class="string">"Sun"</span></div><div class="line"> This is <span class="string">'Mary'</span></div><div class="line">This is <span class="string">'Lucy'</span></div><div class="line">This is <span class="string">"Rooney"</span></div><div class="line">This is \Ronaldo\</div></pre></td></tr></table></figure>
-<ol>
-<li><p>只使用字符的字符串，单引号和双引号没有区别</p>
-</li>
-<li><p>在单引号包括的字符串中可以直接用双引号，在双引号包括的字符串中可以直接用单引号</p>
-</li>
-<li><p>如果在双引号包括的字符串中用双引号，需要用反斜杠转义，注意是”\”   ;同样在单引号包括的字符串中用单引号，也需要转义</p>
-</li>
-<li><p>如果要用反斜杠，则输入‘\’</p>
-<p>​</p>
-</li>
-</ol>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -2158,7 +2313,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">21</span>
+                <span class="site-state-item-count">23</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -2169,7 +2324,7 @@
             
             <div class="site-state-item site-state-categories">
               
-                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">分类</span>
               
             </div>
@@ -2180,7 +2335,7 @@
             
             <div class="site-state-item site-state-tags">
               
-                <span class="site-state-item-count">32</span>
+                <span class="site-state-item-count">35</span>
                 <span class="site-state-item-name">标签</span>
               
             </div>

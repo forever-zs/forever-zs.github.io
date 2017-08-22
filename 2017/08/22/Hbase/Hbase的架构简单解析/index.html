@@ -1,0 +1,897 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hbase,Hadoop生态圈," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.1" />
+
+
+
+
+
+
+<meta name="description" content="Hbase的架构简单解析[TOC] Hbase内部的基本组成 Hbase的整体主要由zookeeper，Hmaster，HRegionServer，Hdfs文件系统组成。由这四部分共同完成数据的读取与写入。  我们知道，hbase有个很重要的特性，可以通过分布式集群存取海量数据，当数据量越来越多的时候通过增加集群主机的数量就可以将数据分散到不同的主机上，这是传统的数据库很难实现的，那么hbase是">
+<meta name="keywords" content="Hbase,Hadoop生态圈">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hbase的架构简单解析">
+<meta property="og:url" content="http://yoursite.com/2017/08/22/Hbase/Hbase的架构简单解析/index.html">
+<meta property="og:site_name" content="帅到没朋友">
+<meta property="og:description" content="Hbase的架构简单解析[TOC] Hbase内部的基本组成 Hbase的整体主要由zookeeper，Hmaster，HRegionServer，Hdfs文件系统组成。由这四部分共同完成数据的读取与写入。  我们知道，hbase有个很重要的特性，可以通过分布式集群存取海量数据，当数据量越来越多的时候通过增加集群主机的数量就可以将数据分散到不同的主机上，这是传统的数据库很难实现的，那么hbase是">
+<meta property="og:image" content="http://www.uml.org.cn/zjjs/images/2012111323.png">
+<meta property="og:image" content="http://img.blog.csdn.net/20170822151914513?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="http://img.blog.csdn.net/20170822153828380?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="http://img.blog.csdn.net/20170822160744968?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="http://img.blog.csdn.net/20170822161823959?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="http://www.blogjava.net/images/blogjava_net/dlevin/HBaseArch1.jpg">
+<meta property="og:updated_time" content="2017-08-22T09:50:49.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hbase的架构简单解析">
+<meta name="twitter:description" content="Hbase的架构简单解析[TOC] Hbase内部的基本组成 Hbase的整体主要由zookeeper，Hmaster，HRegionServer，Hdfs文件系统组成。由这四部分共同完成数据的读取与写入。  我们知道，hbase有个很重要的特性，可以通过分布式集群存取海量数据，当数据量越来越多的时候通过增加集群主机的数量就可以将数据分散到不同的主机上，这是传统的数据库很难实现的，那么hbase是">
+<meta name="twitter:image" content="http://www.uml.org.cn/zjjs/images/2012111323.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/08/22/Hbase/Hbase的架构简单解析/"/>
+
+
+
+
+
+  <title>Hbase的架构简单解析 | 帅到没朋友</title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">帅到没朋友</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/08/22/Hbase/Hbase的架构简单解析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="帅到没朋友">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Hbase的架构简单解析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-08-22T17:10:33+08:00">
+                2017-08-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Hbase/" itemprop="url" rel="index">
+                    <span itemprop="name">Hbase</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Hbase的架构简单解析"><a href="#Hbase的架构简单解析" class="headerlink" title="Hbase的架构简单解析"></a>Hbase的架构简单解析</h2><p>[TOC]</p>
+<h4 id="Hbase内部的基本组成"><a href="#Hbase内部的基本组成" class="headerlink" title="Hbase内部的基本组成"></a>Hbase内部的基本组成</h4><ul>
+<li><p>Hbase的整体主要由zookeeper，Hmaster，HRegionServer，Hdfs文件系统组成。由这四部分共同完成数据的读取与写入。</p>
+</li>
+<li><p>我们知道，hbase有个很重要的特性，可以通过分布式集群存取海量数据，当数据量越来越多的时候通过增加集群主机的数量就可以将数据分散到不同的主机上，这是传统的数据库很难实现的，那么hbase是如何做到的呢？下面我们就来解析下hbase的基本架构原理。</p>
+</li>
+</ul>
+<h4 id="Hbase数据的存储方式"><a href="#Hbase数据的存储方式" class="headerlink" title="Hbase数据的存储方式"></a>Hbase数据的存储方式</h4><ul>
+<li><p>对hbase有一点了解的童鞋都应该知道，hbase不同与传统的数据库，它是一种列式存储的数据库，对于里面的每一张表，每一行的数据都有一个rowkey，在数据库中的数据都是按照rowkey顺序排列的。所以可以将每张表的数据按照rowkey进行划分：</p>
+<blockquote>
+<p>不同的范围的数据划分到不同的地方（hbase中的这个地方被称为HRegion），不同的HRegion被放在不同的主机上，当查询数据的时候，只要根据rowkey先找到数据在那个范围的HRegion中，就可以直接到那个HRegion中找到数据，所以查询效率会比传统的数据库快很多。</p>
+</blockquote>
+<p><img src="http://www.uml.org.cn/zjjs/images/2012111323.png" alt="img"></p>
+<p>基本就像上图这样，随着数据不断增多，Region也会不断的增多（对表的划分增多），不同的Region由多个不同的RegionServer管理着。</p>
+</li>
+</ul>
+<h4 id="Hbase读写数据的基本流程"><a href="#Hbase读写数据的基本流程" class="headerlink" title="Hbase读写数据的基本流程"></a>Hbase读写数据的基本流程</h4><ul>
+<li><p>写数据</p>
+<p><img src="http://img.blog.csdn.net/20170822151914513?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<ol>
+<li>首先要找到管理相应Region的RegionServer（但是如何找到RegionServer的呢？这个会在读取数据哪里解释），然后发送写数据的请求。</li>
+<li>当RegionServer收到请求后，首先会将请求写入到HLog中（防止数据意外丢失，很多系统都是利用的这种机制）。</li>
+<li>在Hlog写入完成之后，在找到相应的Region将数据写入。</li>
+</ol>
+<p>那么问题来了？在Region内部又是如何将数据写入到hdfs中的呢？这里就涉及到Region内部的数据持久化机制了：</p>
+<p><img src="http://img.blog.csdn.net/20170822153828380?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>在Region内部，当数据操作请求由RegionServer传到Region的时候，Region中包含了很多的Store（每个Store对应了一个Table在这个Region中的一个Column Family，即每个Column Family就是一个集中的存储单元），写入数据根据具体在那个Column Family，将数据传到具体的Store中。数据传输流程如下：</p>
+<ol>
+<li>RegionServer首先会将数据写入到MemStore内存中，这时返回客户端通知说已经写入成功了。</li>
+<li>当MemStore中的数据达到一定大小的时候，会有一次flush的过程，在此过程中，数据会被写入StoreFile文件中。然后StoreFile又会被序列化为HFile文件。（备注：在写入MemStore的时候会被插入到指定的顺序中，所以是有序的）</li>
+<li>HFile之后通过Hdfs的api上传到hdfs中。</li>
+</ol>
+</li>
+<li><p>读数据流程</p>
+<p>首先我们需要思考的是，要想读到数据，首先客户端肯定需要知道数据在哪吧。（写数据同样也是要先知道数据在哪），我们已经知道，hbase的数据都划分到了region中，那么我们如何找到相应的region呢？整体流程如下图：</p>
+<p><img src="http://img.blog.csdn.net/20170822160744968?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<ol>
+<li>首先我们要通过zookeeper找找到-root-的位置，这个root本质上也是一个region，不过里面存放的是不同范围的rowkey应该去那个RegionServer的<code>.meta.</code>中去查找</li>
+<li>通过请求<code>.meta.</code>我们知道了我们需要的region在哪个RegionServer上，然后就可以去那个regionServer上去读数据了。</li>
+</ol>
+</li>
+</ul>
+<p>注1：这里其实有个问题，为啥不直接把数据的region所在的信息写在-root-中，这样不就少一个流程了。加快了访问速度吗？主要是为了保存的数据量考虑，由于Region的数量可能会有很多，而-root-只能由一个，所以防止-root-的内存被撑爆，所以多加了一层。</p>
+<p>注2：不过一般公司的数据真的有这么多吗？应该是没有的吧，因而在HBase 0.96以后去掉了-ROOT- Table，只剩下这个特殊的目录表叫做Meta Table(hbase:meta)，它存储了集群中所有用户HRegion的位置信息，而ZooKeeper的节点中(/hbase/meta-region-server)存储的则直接是这个Meta Table的位置</p>
+<h4 id="Hmaster是干嘛的？"><a href="#Hmaster是干嘛的？" class="headerlink" title="Hmaster是干嘛的？"></a>Hmaster是干嘛的？</h4><ul>
+<li><p>在上面的读写流程中，我们已经提到了HRegionServer，hdfs，zookeeper的作用了，但是一直都没有提到Hmaster，这个听上去很像老大的东西到底是干嘛的呢？难道只是打酱油的？Ofcource Not！</p>
+<p><img src="http://img.blog.csdn.net/20170822161823959?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>之前我们虽然已经知道了数据是如何存入的，但是有一个问题一直没说，那就是hbase为啥可以管理海量数据呢？当数据越来越多的时候，是谁来负责将数据进行划分为更小的区域的呢？那就是一直在默默奉献额老大——HMaster。</p>
+</li>
+<li><p>Hmaster是如何管理数据的呢？</p>
+<ol>
+<li><p>清理冗余的数据</p>
+<p>当同一region的数据块达到四块的时候，Hmaster会对其进行一次数据合并，清理期中的冗余数据。合并之后的数据会小于256M。</p>
+</li>
+<li><p>HRegion Split</p>
+<ul>
+<li>最初，一个Table只有一个HRegion，随着数据写入增加，如果一个HRegion到达一定的大小，就需要Split成两个HRegion，这个大小由hbase.hregion.max.filesize指定。这个Split过程就是由Hmaster完成的。</li>
+<li>当split时，两个新的HRegion会在同一个HRegionServer中创建，它们各自包含父HRegion一半的数据，当Split完成后，父HRegion会下线，而新的两个子HRegion会向HMaster注册上线，处于负载均衡的考虑，这两个新的HRegion可能会被HMaster分配到其他的HRegionServer中。</li>
+</ul>
+</li>
+<li><p>当HRegionServer宕机之后，hmaster可以读取hlog，将数据在发送给其他RegionServer进行数据恢复。并修改<code>.meta.</code></p>
+</li>
+</ol>
+<p>注：RegionServer不管理Hbase的元数据，元数据由Zookeeper管理。</p>
+</li>
+</ul>
+<h4 id="总结一下"><a href="#总结一下" class="headerlink" title="总结一下"></a>总结一下</h4><ul>
+<li><p>Hbase中各个主要部分的功能：</p>
+<p><img src="http://www.blogjava.net/images/blogjava_net/dlevin/HBaseArch1.jpg" alt="img"></p>
+<ol>
+<li><p>Hmater</p>
+<blockquote>
+<ul>
+<li>在Region Split后，负责新Region的分配； </li>
+<li>新机器加入时，管理HRegion Server的负载均衡，调整Region分布</li>
+<li>在HRegion Server宕机后，负责失效HRegion Server 上的Regions迁移。</li>
+</ul>
+</blockquote>
+</li>
+<li><p>Region Server</p>
+<blockquote>
+<ul>
+<li>Region server维护Master分配给它的region，处理对这些region的IO请求</li>
+<li>HRegion Server管理了很多table的分区，也就是region。</li>
+</ul>
+</blockquote>
+</li>
+<li><p>zookeeper</p>
+<blockquote>
+<ul>
+<li>ZooKeeper为HBase集群提供协调服务，它管理着HMaster和HRegionServer的状态(available/alive等)，并且会在它们宕机时通知给HMaster</li>
+<li>zookeeper中管理着hbase的元数据，例如-root-的位置所在。</li>
+</ul>
+</blockquote>
+</li>
+<li><p>hdfs</p>
+<blockquote>
+<ul>
+<li>数据文件的存放处。由于其本身的分布式存储机制，所以数据文件很安全。</li>
+<li>hadoop的datanode最好和region在同一主机上，方便读取数据。尽量避免网络数据传输。</li>
+</ul>
+</blockquote>
+</li>
+</ol>
+</li>
+</ul>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Hbase/" rel="tag"># Hbase</a>
+          
+            <a href="/tags/Hadoop生态圈/" rel="tag"># Hadoop生态圈</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/08/20/Hbase/Hbase入门/" rel="next" title="Hbase入门">
+                <i class="fa fa-chevron-left"></i> Hbase入门
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/head.jpg"
+               alt="forever_zs" />
+          <p class="site-author-name" itemprop="name">forever_zs</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">23</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">12</span>
+                <span class="site-state-item-name">分类</span>
+              
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              
+                <span class="site-state-item-count">35</span>
+                <span class="site-state-item-name">标签</span>
+              
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/forever-zs" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="https://twitter.com/your-user-name" target="_blank" title="Twitter">
+                  
+                    <i class="fa fa-fw fa-twitter"></i>
+                  
+                  Twitter
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/forever_zs_forever" target="_blank" title="微博">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  微博
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://douban.com/people/your-user-name" target="_blank" title="豆瓣">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  豆瓣
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://www.zhihu.com/people/your-user-name" target="_blank" title="知乎">
+                  
+                    <i class="fa fa-fw fa-globe"></i>
+                  
+                  知乎
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Hbase的架构简单解析"><span class="nav-number">1.</span> <span class="nav-text">Hbase的架构简单解析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Hbase内部的基本组成"><span class="nav-number">1.0.1.</span> <span class="nav-text">Hbase内部的基本组成</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Hbase数据的存储方式"><span class="nav-number">1.0.2.</span> <span class="nav-text">Hbase数据的存储方式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Hbase读写数据的基本流程"><span class="nav-number">1.0.3.</span> <span class="nav-text">Hbase读写数据的基本流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Hmaster是干嘛的？"><span class="nav-number">1.0.4.</span> <span class="nav-text">Hmaster是干嘛的？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#总结一下"><span class="nav-number">1.0.5.</span> <span class="nav-text">总结一下</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">forever_zs</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+  
+  <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.1"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.1"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.1"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.1"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.1"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
