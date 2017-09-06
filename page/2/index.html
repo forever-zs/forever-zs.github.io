@@ -271,7 +271,7 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/17/前端框架/node.js/node中的基本模块/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/17/前端框架/node.js/koa的基本使用/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="forever_zs">
@@ -290,7 +290,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2017/07/17/前端框架/node.js/node中的基本模块/" itemprop="url">Node中的模块</a></h1>
+                <a class="post-title-link" href="/2017/07/17/前端框架/node.js/koa的基本使用/" itemprop="url">Koa2的基本使用</a></h1>
         
 
         <div class="post-meta">
@@ -302,7 +302,7 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-17T00:00:00+08:00">
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-17T20:10:33+08:00">
                 2017-07-17
               </time>
             
@@ -361,65 +361,51 @@
       
         
           
-            <h2 id="Node中的模块"><a href="#Node中的模块" class="headerlink" title="Node中的模块"></a>Node中的模块</h2><p>[TOC]</p>
-<p>####常用内置对象</p>
-<ul>
-<li><p>global</p>
-<p>而在Node.js环境中，有唯一的全局对象，叫<code>global</code>，这个对象的属性和方法也和浏览器环境的<code>window</code>不同</p>
+            <h2 id="Koa2的基本使用"><a href="#Koa2的基本使用" class="headerlink" title="Koa2的基本使用"></a>Koa2的基本使用</h2><p>[TOC]</p>
+<h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><ul>
+<li>koa2完全使用Promise并配合<code>async</code>来实现异步。但代码看起爱像是同步的。</li>
+</ul>
+<h4 id="入门程序"><a href="#入门程序" class="headerlink" title="入门程序"></a>入门程序</h4><ul>
+<li><p>创建app.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 导入koa，和koa 1.x不同，在koa2中，我们导入的是一个class，因此用大写的Koa表示:</span></div><div class="line"><span class="keyword">const</span> Koa = <span class="built_in">require</span>(<span class="string">'koa'</span>);</div><div class="line"></div><div class="line"><span class="comment">// 创建一个Koa对象表示web app本身:</span></div><div class="line"><span class="keyword">const</span> app = <span class="keyword">new</span> Koa();</div><div class="line"></div><div class="line"><span class="comment">// 对于任何请求，app将调用该异步函数处理请求：</span></div><div class="line"><span class="comment">//参数ctx是由koa传入的封装了request和response的变量，我们可以通过它访问request和response，next是koa传入的将要处理的下一个异步函数。</span></div><div class="line">app.use(<span class="keyword">async</span> (ctx, next) =&gt; &#123;</div><div class="line">    <span class="keyword">await</span> next();</div><div class="line">    ctx.response.type = <span class="string">'text/html'</span>;</div><div class="line">    ctx.response.body = <span class="string">'&lt;h1&gt;Hello, koa2!&lt;/h1&gt;'</span>;</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="comment">// 在端口3000监听:</span></div><div class="line">app.listen(<span class="number">3000</span>);</div><div class="line"><span class="built_in">console</span>.log(<span class="string">'app started at port 3000...'</span>);</div></pre></td></tr></table></figure>
+<p>由<code>async</code>标记的函数称为异步函数，在异步函数中，可以用<code>await</code>调用另一个异步函数。</p>
 </li>
-<li><p>process</p>
-<p>代表当前Node.js进程。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">&gt; process.version;</div><div class="line"><span class="string">'v5.2.0'</span></div><div class="line">&gt; process.platform;</div><div class="line"><span class="string">'darwin'</span></div><div class="line">&gt; process.arch;</div><div class="line"><span class="string">'x64'</span></div><div class="line">&gt; process.cwd(); <span class="comment">//返回当前工作目录</span></div><div class="line"><span class="string">'/Users/michael'</span></div><div class="line">&gt; process.chdir(<span class="string">'/private/tmp'</span>); <span class="comment">// 切换当前工作目录</span></div><div class="line"><span class="literal">undefined</span></div><div class="line">&gt; process.cwd();</div><div class="line"><span class="string">'/private/tmp'</span></div></pre></td></tr></table></figure>
+<li><p>koa把很多async函数组成一个处理链，每个async函数都可以做一些自己的事情，然后用<code>await next()</code>来调用下一个async函数。我们把每个async函数称为middleware，这些middleware可以组合起来，完成很多有用的功能。<code>app.use()</code>的顺序决定了middleware的顺序。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">app.use(<span class="keyword">async</span> (ctx, next) =&gt; &#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">`<span class="subst">$&#123;ctx.request.method&#125;</span> <span class="subst">$&#123;ctx.request.url&#125;</span>`</span>); <span class="comment">// 打印URL</span></div><div class="line">    <span class="keyword">await</span> next(); <span class="comment">// 调用下一个middleware</span></div><div class="line">&#125;);</div><div class="line"></div><div class="line">app.use(<span class="keyword">async</span> (ctx, next) =&gt; &#123;</div><div class="line">    <span class="keyword">const</span> start = <span class="keyword">new</span> <span class="built_in">Date</span>().getTime(); <span class="comment">// 当前时间</span></div><div class="line">    <span class="keyword">await</span> next(); <span class="comment">// 调用下一个middleware</span></div><div class="line">    <span class="keyword">const</span> ms = <span class="keyword">new</span> <span class="built_in">Date</span>().getTime() - start; <span class="comment">// 耗费时间</span></div><div class="line">    <span class="built_in">console</span>.log(<span class="string">`Time: <span class="subst">$&#123;ms&#125;</span>ms`</span>); <span class="comment">// 打印耗费时间</span></div><div class="line">&#125;);</div><div class="line"></div><div class="line">app.use(<span class="keyword">async</span> (ctx, next) =&gt; &#123;</div><div class="line">    <span class="keyword">await</span> next();</div><div class="line">    ctx.response.type = <span class="string">'text/html'</span>;</div><div class="line">    ctx.response.body = <span class="string">'&lt;h1&gt;Hello, koa2!&lt;/h1&gt;'</span>;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>如果没有调用<strong><em>await next();</em></strong> 那么后面的middleware都不会执行。（可以利用这个进行用户权限判定）</p>
 </li>
 </ul>
-<h4 id="常用内置模块"><a href="#常用内置模块" class="headerlink" title="常用内置模块"></a>常用内置模块</h4><ul>
-<li><p>文件系统模块（服务端都要使用异步方法）</p>
+<h4 id="创建url映射"><a href="#创建url映射" class="headerlink" title="创建url映射"></a>创建url映射</h4><ul>
+<li><p>将不同的url映射到不同的函数，通过koa-router实现。</p>
+</li>
+<li><p>处理get请求</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> Koa = <span class="built_in">require</span>(<span class="string">'koa'</span>);</div><div class="line"></div><div class="line"><span class="comment">// 注意require('koa-router')返回的是函数:</span></div><div class="line"><span class="keyword">const</span> router = <span class="built_in">require</span>(<span class="string">'koa-router'</span>)();</div><div class="line"></div><div class="line"><span class="keyword">const</span> app = <span class="keyword">new</span> Koa();</div><div class="line"></div><div class="line"><span class="comment">// log request URL:</span></div><div class="line">app.use(<span class="keyword">async</span> (ctx, next) =&gt; &#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">`Process <span class="subst">$&#123;ctx.request.method&#125;</span> <span class="subst">$&#123;ctx.request.url&#125;</span>...`</span>);</div><div class="line">    <span class="keyword">await</span> next();</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="comment">// 注册一个get函数，并注明映射的url</span></div><div class="line">router.get(<span class="string">'/hello/:name'</span>, <span class="keyword">async</span> (ctx, next) =&gt; &#123;</div><div class="line">    <span class="keyword">var</span> name = ctx.params.name;</div><div class="line">    ctx.response.body = <span class="string">`&lt;h1&gt;Hello, <span class="subst">$&#123;name&#125;</span>!&lt;/h1&gt;`</span>;</div><div class="line">&#125;);</div><div class="line"></div><div class="line">router.get(<span class="string">'/'</span>, <span class="keyword">async</span> (ctx, next) =&gt; &#123;</div><div class="line">    ctx.response.body = <span class="string">'&lt;h1&gt;Index&lt;/h1&gt;'</span>;</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="comment">// add router middleware:</span></div><div class="line">app.use(router.routes());</div><div class="line"></div><div class="line">app.listen(<span class="number">3000</span>);</div><div class="line"><span class="built_in">console</span>.log(<span class="string">'app started at port 3000...'</span>);</div></pre></td></tr></table></figure>
+</li>
+<li><p>处理post请求</p>
+<p>​    post请求通常会发送一个表单，或者JSON，它作为request的body发送，但无论是Node.js提供的原始request对象，还是koa提供的request对象，都不提供解析request的body的功能！</p>
+<p>​    所以，我们又需要引入另一个middleware（koa-bodyparser）来解析原始request请求，然后，把解析后的参数，绑定到<code>ctx.request.body</code>中。</p>
 <ol>
-<li><p>异步读取文本文件</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> fs=<span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"><span class="comment">//在同级目录下的文本文件，当正常读取时，err参数为null，data参数为读取到的String。当读取发生错误时，err参数代表一个错误对象，data为undefined</span></div><div class="line">fs.readFile(<span class="string">'hello.txt'</span>,<span class="string">'utf-8'</span>,<span class="function"><span class="keyword">function</span>(<span class="params">err,data</span>)</span>&#123;</div><div class="line">    <span class="keyword">if</span>(err)&#123;</div><div class="line">        <span class="built_in">console</span>.log(err);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">else</span>&#123;</div><div class="line">        <span class="built_in">console</span>.log(data);</div><div class="line">    &#125;</div><div class="line">&#125;)</div></pre></td></tr></table></figure>
+<li><p>在package.json中添加依赖</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">"koa-bodyparser": "3.2.0"</div></pre></td></tr></table></figure>
 </li>
-<li><p>异步读取二进制文件</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"><span class="comment">//当读取二进制文件时，不传入文件编码时，回调函数的data参数将返回一个Buffer对象。在Node.js中，Buffer对象就是一个包含零个或任意个字节的数组（注意和Array不同）。</span></div><div class="line">fs.readFile(<span class="string">'sample.png'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">err, data</span>) </span>&#123;</div><div class="line">    <span class="keyword">if</span> (err) &#123;</div><div class="line">        <span class="built_in">console</span>.log(err);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="built_in">console</span>.log(data);</div><div class="line">        <span class="built_in">console</span>.log(data.length + <span class="string">' bytes'</span>);</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
-<p>Buffer对象与String对象之间的转化</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Buffer -&gt; String</span></div><div class="line"><span class="keyword">var</span> text = data.toString(<span class="string">'utf-8'</span>);</div><div class="line"><span class="built_in">console</span>.log(text);</div><div class="line"><span class="comment">// String -&gt; Buffer</span></div><div class="line"><span class="keyword">var</span> buf = <span class="keyword">new</span> Buffer(text, <span class="string">'utf-8'</span>);</div><div class="line"><span class="built_in">console</span>.log(buf);</div></pre></td></tr></table></figure>
-</li>
-<li><p>同步读取文件</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"><span class="comment">//不接受回调函数，直接函数返回结果</span></div><div class="line"><span class="keyword">var</span> data = fs.readFileSync(<span class="string">'sample.txt'</span>, <span class="string">'utf-8'</span>);</div><div class="line"><span class="built_in">console</span>.log(data);</div></pre></td></tr></table></figure>
-</li>
-<li><p>异步写文件</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"><span class="keyword">var</span> data = <span class="string">'Hello, Node.js'</span>;</div><div class="line"><span class="comment">//如果传入的数据是String，默认按UTF-8编码写入文本文件，如果传入的参数是Buffer，则写入的是二进制文件。回调函数由于只关心成功与否，因此只需要一个err参数。</span></div><div class="line">fs.writeFile(<span class="string">'output.txt'</span>, data, <span class="function"><span class="keyword">function</span> (<span class="params">err</span>) </span>&#123;</div><div class="line">    <span class="keyword">if</span> (err) &#123;</div><div class="line">        <span class="built_in">console</span>.log(err);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'ok.'</span>);</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
-</li>
-<li><p>同步写文件</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"></div><div class="line"><span class="keyword">var</span> data = <span class="string">'Hello, Node.js'</span>;</div><div class="line">fs.writeFileSync(<span class="string">'output.txt'</span>, data);</div></pre></td></tr></table></figure>
-</li>
-<li><p>通过stat获取文件的基本信息</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"></div><div class="line">fs.stat(<span class="string">'sample.txt'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">err, stat</span>) </span>&#123;</div><div class="line">    <span class="keyword">if</span> (err) &#123;</div><div class="line">        <span class="built_in">console</span>.log(err);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="comment">// 是否是文件:</span></div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'isFile: '</span> + stat.isFile());</div><div class="line">        <span class="comment">// 是否是目录:</span></div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'isDirectory: '</span> + stat.isDirectory());</div><div class="line">        <span class="keyword">if</span> (stat.isFile()) &#123;</div><div class="line">            <span class="comment">// 文件大小:</span></div><div class="line">            <span class="built_in">console</span>.log(<span class="string">'size: '</span> + stat.size);</div><div class="line">            <span class="comment">// 创建时间, Date对象:</span></div><div class="line">            <span class="built_in">console</span>.log(<span class="string">'birth time: '</span> + stat.birthtime);</div><div class="line">            <span class="comment">// 修改时间, Date对象:</span></div><div class="line">            <span class="built_in">console</span>.log(<span class="string">'modified time: '</span> + stat.mtime);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<li><p>解析post请求</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//引入koa-bodyparser</span></div><div class="line"><span class="keyword">const</span> bodyParser = <span class="built_in">require</span>(<span class="string">'koa-bodyparser'</span>);</div><div class="line"><span class="comment">//koa-bodyparser必须在router之前被注册到app对象上。</span></div><div class="line">app.use(bodyParser());</div><div class="line">router.post(<span class="string">'/signin'</span>, <span class="keyword">async</span> (ctx, next) =&gt; &#123;</div><div class="line">  <span class="comment">//如果该字段不存在，默认值设置为''。</span></div><div class="line">    <span class="keyword">var</span></div><div class="line">        name = ctx.request.body.name || <span class="string">''</span>,</div><div class="line">        password = ctx.request.body.password || <span class="string">''</span>;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">`signin with name: <span class="subst">$&#123;name&#125;</span>, password: <span class="subst">$&#123;password&#125;</span>`</span>);</div><div class="line">    <span class="keyword">if</span> (name === <span class="string">'koa'</span> &amp;&amp; password === <span class="string">'12345'</span>) &#123;</div><div class="line">        ctx.response.body = <span class="string">`&lt;h1&gt;Welcome, <span class="subst">$&#123;name&#125;</span>!&lt;/h1&gt;`</span>;</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        ctx.response.body = <span class="string">`&lt;h1&gt;Login failed!&lt;/h1&gt;</span></div><div class="line">        &lt;p&gt;&lt;a href="/"&gt;Try again&lt;/a&gt;&lt;/p&gt;`;</div><div class="line">    &#125;</div><div class="line">&#125;);</div><div class="line">app.use(router.routes());</div><div class="line"></div><div class="line">app.listen(<span class="number">3000</span>);</div><div class="line"><span class="built_in">console</span>.log(<span class="string">'app started at port 3000...'</span>);</div></pre></td></tr></table></figure>
 </li>
 </ol>
 </li>
-<li><p>Stream模块</p>
-<p>流是一种抽象的数据结构。特点是数据是有序的，而且必须依次读取，或者依次写入，不能像Array那样随机定位。</p>
+<li><h4 id="封装一个简单的url映射框架"><a href="#封装一个简单的url映射框架" class="headerlink" title="封装一个简单的url映射框架"></a>封装一个简单的url映射框架</h4><p>我们将处理url映射的js按照功能划分，并统一放在controller包中。</p>
 <ol>
-<li><p>从文本流读取文本内容</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"></div><div class="line"><span class="comment">// 打开一个流:</span></div><div class="line"><span class="keyword">var</span> rs = fs.createReadStream(<span class="string">'hello.txt'</span>, <span class="string">'utf-8'</span>);</div><div class="line"><span class="comment">//data事件可能会有多次，每次的data只是一部分的数据</span></div><div class="line">rs.on(<span class="string">'data'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">data</span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'DATA:'</span>)</div><div class="line">    <span class="built_in">console</span>.log(data);</div><div class="line">&#125;);</div><div class="line"></div><div class="line">rs.on(<span class="string">'end'</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'END'</span>);</div><div class="line">&#125;);</div><div class="line"></div><div class="line">rs.on(<span class="string">'error'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">err</span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'ERROR: '</span> + err);</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<li><p>新建controller包，在其内新建user.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> fn_signin = <span class="keyword">async</span> (ctx, next) =&gt; &#123;</div><div class="line">    <span class="keyword">var</span></div><div class="line">        name = ctx.request.body.name || <span class="string">''</span>,</div><div class="line">        password = ctx.request.body.password || <span class="string">''</span>;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">`signin with name: <span class="subst">$&#123;name&#125;</span>, password: <span class="subst">$&#123;password&#125;</span>`</span>);</div><div class="line">    <span class="keyword">if</span> (name === <span class="string">'koa'</span> &amp;&amp; password === <span class="string">'12345'</span>) &#123;</div><div class="line">        ctx.response.body = <span class="string">`&lt;h1&gt;Welcome, <span class="subst">$&#123;name&#125;</span>!&lt;/h1&gt;`</span>;</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        ctx.response.body = <span class="string">`&lt;h1&gt;Login failed!&lt;/h1&gt;</span></div><div class="line">        &lt;p&gt;&lt;a href="/"&gt;Try again&lt;/a&gt;&lt;/p&gt;`;</div><div class="line">    &#125;</div><div class="line">&#125;;</div><div class="line"><span class="comment">//将signin方法暴露出去</span></div><div class="line"><span class="built_in">module</span>.exports = &#123;</div><div class="line">    <span class="string">'POST /signin'</span>: fn_signin</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
 </li>
-<li><p>以流的形式写入文件</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"></div><div class="line"><span class="keyword">var</span> ws1 = fs.createWriteStream(<span class="string">'output1.txt'</span>, <span class="string">'utf-8'</span>);</div><div class="line">ws1.write(<span class="string">'使用Stream写入文本数据...\n'</span>);</div><div class="line">ws1.write(<span class="string">'END.'</span>);</div><div class="line">ws1.end();</div><div class="line"></div><div class="line"><span class="keyword">var</span> ws2 = fs.createWriteStream(<span class="string">'output2.txt'</span>);</div><div class="line">ws2.write(<span class="keyword">new</span> Buffer(<span class="string">'使用Stream写入二进制数据...\n'</span>, <span class="string">'utf-8'</span>));</div><div class="line">ws2.write(<span class="keyword">new</span> Buffer(<span class="string">'END.'</span>, <span class="string">'utf-8'</span>));</div><div class="line">ws2.end();</div></pre></td></tr></table></figure>
+<li><p>新建controller.js负责扫描cintroller包下的js文件，并为其注册到router</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">addMapping</span>(<span class="params">router, mapping</span>) </span>&#123;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> url <span class="keyword">in</span> mapping) &#123;</div><div class="line">        <span class="keyword">if</span> (url.startsWith(<span class="string">'GET '</span>)) &#123;</div><div class="line">            <span class="keyword">var</span> path = url.substring(<span class="number">4</span>);</div><div class="line">            router.get(path, mapping[url]);</div><div class="line">            <span class="built_in">console</span>.log(<span class="string">`register URL mapping: GET <span class="subst">$&#123;path&#125;</span>`</span>);</div><div class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (url.startsWith(<span class="string">'POST '</span>)) &#123;</div><div class="line">            <span class="keyword">var</span> path = url.substring(<span class="number">5</span>);</div><div class="line">            router.post(path, mapping[url]);</div><div class="line">            <span class="built_in">console</span>.log(<span class="string">`register URL mapping: POST <span class="subst">$&#123;path&#125;</span>`</span>);</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            <span class="built_in">console</span>.log(<span class="string">`invalid URL: <span class="subst">$&#123;url&#125;</span>`</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">addControllers</span>(<span class="params">router,dir</span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> files = fs.readdirSync(__dirname + dir+<span class="string">''</span>);</div><div class="line">    <span class="keyword">var</span> js_files = files.filter(<span class="function">(<span class="params">f</span>) =&gt;</span> &#123;</div><div class="line">        <span class="keyword">return</span> f.endsWith(<span class="string">'.js'</span>);</div><div class="line">    &#125;);</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> f <span class="keyword">of</span> js_files) &#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">`process controller: <span class="subst">$&#123;f&#125;</span>...`</span>);</div><div class="line">        <span class="keyword">let</span> mapping = <span class="built_in">require</span>(__dirname + <span class="string">'/controllers/'</span> + f);</div><div class="line">        addMapping(router, mapping);</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="built_in">module</span>.exports = <span class="function"><span class="keyword">function</span> (<span class="params">dir</span>) </span>&#123;</div><div class="line">    <span class="keyword">let</span></div><div class="line">        controllers_dir = dir || <span class="string">'controllers'</span>, <span class="comment">// 如果不传参数，扫描目录默认为'controllers'</span></div><div class="line">        router = <span class="built_in">require</span>(<span class="string">'koa-router'</span>)();</div><div class="line">    addControllers(router, controllers_dir);</div><div class="line">    <span class="keyword">return</span> router.routes();</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
 </li>
-<li><p>通过pipe快速复制文件</p>
-<p><code>pipe()</code>把一个文件流和另一个文件流串起来，这样源文件的所有数据就自动写入到目标文件里了</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"></div><div class="line"><span class="keyword">var</span> rs = fs.createReadStream(<span class="string">'sample.txt'</span>);</div><div class="line"><span class="keyword">var</span> ws = fs.createWriteStream(<span class="string">'copied.txt'</span>);</div><div class="line"></div><div class="line">rs.pipe(ws);</div></pre></td></tr></table></figure>
-</li>
-</ol>
-</li>
-<li><p>Http网络模块</p>
-<ol>
-<li><p>接受网络请求</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="comment">// 导入http模块:</span></div><div class="line"><span class="keyword">var</span> http = <span class="built_in">require</span>(<span class="string">'http'</span>);</div><div class="line"></div><div class="line"><span class="comment">// 创建http server，并传入回调函数:</span></div><div class="line"><span class="keyword">var</span> server = http.createServer(<span class="function"><span class="keyword">function</span> (<span class="params">request, response</span>) </span>&#123;</div><div class="line">    <span class="comment">// 回调函数接收request和response对象,</span></div><div class="line">    <span class="comment">// 获得HTTP请求的method和url:</span></div><div class="line">    <span class="built_in">console</span>.log(request.method + <span class="string">': '</span> + request.url);</div><div class="line">    <span class="comment">// 将HTTP响应200写入response, 同时设置Content-Type: text/html:</span></div><div class="line">    response.writeHead(<span class="number">200</span>, &#123;<span class="string">'Content-Type'</span>: <span class="string">'text/html'</span>&#125;);</div><div class="line">    <span class="comment">// 将HTTP响应的HTML内容写入response:</span></div><div class="line">    response.end(<span class="string">'&lt;h1&gt;Hello world!&lt;/h1&gt;'</span>);</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="comment">// 让服务器监听8080端口:</span></div><div class="line">server.listen(<span class="number">8080</span>);</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log(<span class="string">'Server is running at http://127.0.0.1:8080/'</span>);</div></pre></td></tr></table></figure>
+<li><p>新建app.js，调用controller.js提供的方法</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 导入controller middleware:</span></div><div class="line"><span class="keyword">const</span> controller = <span class="built_in">require</span>(<span class="string">'./controller'</span>);</div><div class="line"></div><div class="line">...</div><div class="line"></div><div class="line"><span class="comment">// 使用middleware:</span></div><div class="line">app.use(controller());</div></pre></td></tr></table></figure>
 <p>​</p>
 </li>
 </ol>
-<p>​</p>
 </li>
 </ul>
 
@@ -590,6 +576,200 @@
 <li>变量<code>module</code>是Node在加载js文件前准备的一个变量，并将其传入加载函数，我们在<code>hello.js</code>中可以直接使用变量<code>module</code>原因就在于它实际上是函数的一个参数：</li>
 <li>通过把参数<code>module</code>传递给<code>load()</code>函数，<code>hello.js</code>就顺利地把一个变量传递给了Node执行环境，Node会把<code>module</code>变量保存到某个地方。</li>
 <li>由于Node保存了所有导入的<code>module</code>，当我们用<code>require()</code>获取module时，Node找到对应的<code>module</code>，把这个<code>module</code>的<code>exports</code>变量返回，</li>
+</ol>
+<p>​</p>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/17/前端框架/node.js/node中的基本模块/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="帅到没朋友">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/07/17/前端框架/node.js/node中的基本模块/" itemprop="url">Node中的模块</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-17T00:00:00+08:00">
+                2017-07-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/node-js/" itemprop="url" rel="index">
+                    <span itemprop="name">node.js</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="Node中的模块"><a href="#Node中的模块" class="headerlink" title="Node中的模块"></a>Node中的模块</h2><p>[TOC]</p>
+<p>####常用内置对象</p>
+<ul>
+<li><p>global</p>
+<p>而在Node.js环境中，有唯一的全局对象，叫<code>global</code>，这个对象的属性和方法也和浏览器环境的<code>window</code>不同</p>
+</li>
+<li><p>process</p>
+<p>代表当前Node.js进程。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">&gt; process.version;</div><div class="line"><span class="string">'v5.2.0'</span></div><div class="line">&gt; process.platform;</div><div class="line"><span class="string">'darwin'</span></div><div class="line">&gt; process.arch;</div><div class="line"><span class="string">'x64'</span></div><div class="line">&gt; process.cwd(); <span class="comment">//返回当前工作目录</span></div><div class="line"><span class="string">'/Users/michael'</span></div><div class="line">&gt; process.chdir(<span class="string">'/private/tmp'</span>); <span class="comment">// 切换当前工作目录</span></div><div class="line"><span class="literal">undefined</span></div><div class="line">&gt; process.cwd();</div><div class="line"><span class="string">'/private/tmp'</span></div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="常用内置模块"><a href="#常用内置模块" class="headerlink" title="常用内置模块"></a>常用内置模块</h4><ul>
+<li><p>文件系统模块（服务端都要使用异步方法）</p>
+<ol>
+<li><p>异步读取文本文件</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span></div><div class="line"></div><div class="line"><span class="keyword">var</span> fs=<span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"><span class="comment">//在同级目录下的文本文件，当正常读取时，err参数为null，data参数为读取到的String。当读取发生错误时，err参数代表一个错误对象，data为undefined</span></div><div class="line">fs.readFile(<span class="string">'hello.txt'</span>,<span class="string">'utf-8'</span>,<span class="function"><span class="keyword">function</span>(<span class="params">err,data</span>)</span>&#123;</div><div class="line">    <span class="keyword">if</span>(err)&#123;</div><div class="line">        <span class="built_in">console</span>.log(err);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">else</span>&#123;</div><div class="line">        <span class="built_in">console</span>.log(data);</div><div class="line">    &#125;</div><div class="line">&#125;)</div></pre></td></tr></table></figure>
+</li>
+<li><p>异步读取二进制文件</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"><span class="comment">//当读取二进制文件时，不传入文件编码时，回调函数的data参数将返回一个Buffer对象。在Node.js中，Buffer对象就是一个包含零个或任意个字节的数组（注意和Array不同）。</span></div><div class="line">fs.readFile(<span class="string">'sample.png'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">err, data</span>) </span>&#123;</div><div class="line">    <span class="keyword">if</span> (err) &#123;</div><div class="line">        <span class="built_in">console</span>.log(err);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="built_in">console</span>.log(data);</div><div class="line">        <span class="built_in">console</span>.log(data.length + <span class="string">' bytes'</span>);</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>Buffer对象与String对象之间的转化</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Buffer -&gt; String</span></div><div class="line"><span class="keyword">var</span> text = data.toString(<span class="string">'utf-8'</span>);</div><div class="line"><span class="built_in">console</span>.log(text);</div><div class="line"><span class="comment">// String -&gt; Buffer</span></div><div class="line"><span class="keyword">var</span> buf = <span class="keyword">new</span> Buffer(text, <span class="string">'utf-8'</span>);</div><div class="line"><span class="built_in">console</span>.log(buf);</div></pre></td></tr></table></figure>
+</li>
+<li><p>同步读取文件</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"><span class="comment">//不接受回调函数，直接函数返回结果</span></div><div class="line"><span class="keyword">var</span> data = fs.readFileSync(<span class="string">'sample.txt'</span>, <span class="string">'utf-8'</span>);</div><div class="line"><span class="built_in">console</span>.log(data);</div></pre></td></tr></table></figure>
+</li>
+<li><p>异步写文件</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"><span class="keyword">var</span> data = <span class="string">'Hello, Node.js'</span>;</div><div class="line"><span class="comment">//如果传入的数据是String，默认按UTF-8编码写入文本文件，如果传入的参数是Buffer，则写入的是二进制文件。回调函数由于只关心成功与否，因此只需要一个err参数。</span></div><div class="line">fs.writeFile(<span class="string">'output.txt'</span>, data, <span class="function"><span class="keyword">function</span> (<span class="params">err</span>) </span>&#123;</div><div class="line">    <span class="keyword">if</span> (err) &#123;</div><div class="line">        <span class="built_in">console</span>.log(err);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'ok.'</span>);</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+</li>
+<li><p>同步写文件</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"></div><div class="line"><span class="keyword">var</span> data = <span class="string">'Hello, Node.js'</span>;</div><div class="line">fs.writeFileSync(<span class="string">'output.txt'</span>, data);</div></pre></td></tr></table></figure>
+</li>
+<li><p>通过stat获取文件的基本信息</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"></div><div class="line">fs.stat(<span class="string">'sample.txt'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">err, stat</span>) </span>&#123;</div><div class="line">    <span class="keyword">if</span> (err) &#123;</div><div class="line">        <span class="built_in">console</span>.log(err);</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="comment">// 是否是文件:</span></div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'isFile: '</span> + stat.isFile());</div><div class="line">        <span class="comment">// 是否是目录:</span></div><div class="line">        <span class="built_in">console</span>.log(<span class="string">'isDirectory: '</span> + stat.isDirectory());</div><div class="line">        <span class="keyword">if</span> (stat.isFile()) &#123;</div><div class="line">            <span class="comment">// 文件大小:</span></div><div class="line">            <span class="built_in">console</span>.log(<span class="string">'size: '</span> + stat.size);</div><div class="line">            <span class="comment">// 创建时间, Date对象:</span></div><div class="line">            <span class="built_in">console</span>.log(<span class="string">'birth time: '</span> + stat.birthtime);</div><div class="line">            <span class="comment">// 修改时间, Date对象:</span></div><div class="line">            <span class="built_in">console</span>.log(<span class="string">'modified time: '</span> + stat.mtime);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+</li>
+</ol>
+</li>
+<li><p>Stream模块</p>
+<p>流是一种抽象的数据结构。特点是数据是有序的，而且必须依次读取，或者依次写入，不能像Array那样随机定位。</p>
+<ol>
+<li><p>从文本流读取文本内容</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"></div><div class="line"><span class="comment">// 打开一个流:</span></div><div class="line"><span class="keyword">var</span> rs = fs.createReadStream(<span class="string">'hello.txt'</span>, <span class="string">'utf-8'</span>);</div><div class="line"><span class="comment">//data事件可能会有多次，每次的data只是一部分的数据</span></div><div class="line">rs.on(<span class="string">'data'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">data</span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'DATA:'</span>)</div><div class="line">    <span class="built_in">console</span>.log(data);</div><div class="line">&#125;);</div><div class="line"></div><div class="line">rs.on(<span class="string">'end'</span>, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'END'</span>);</div><div class="line">&#125;);</div><div class="line"></div><div class="line">rs.on(<span class="string">'error'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">err</span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'ERROR: '</span> + err);</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+</li>
+<li><p>以流的形式写入文件</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"></div><div class="line"><span class="keyword">var</span> ws1 = fs.createWriteStream(<span class="string">'output1.txt'</span>, <span class="string">'utf-8'</span>);</div><div class="line">ws1.write(<span class="string">'使用Stream写入文本数据...\n'</span>);</div><div class="line">ws1.write(<span class="string">'END.'</span>);</div><div class="line">ws1.end();</div><div class="line"></div><div class="line"><span class="keyword">var</span> ws2 = fs.createWriteStream(<span class="string">'output2.txt'</span>);</div><div class="line">ws2.write(<span class="keyword">new</span> Buffer(<span class="string">'使用Stream写入二进制数据...\n'</span>, <span class="string">'utf-8'</span>));</div><div class="line">ws2.write(<span class="keyword">new</span> Buffer(<span class="string">'END.'</span>, <span class="string">'utf-8'</span>));</div><div class="line">ws2.end();</div></pre></td></tr></table></figure>
+</li>
+<li><p>通过pipe快速复制文件</p>
+<p><code>pipe()</code>把一个文件流和另一个文件流串起来，这样源文件的所有数据就自动写入到目标文件里了</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="keyword">var</span> fs = <span class="built_in">require</span>(<span class="string">'fs'</span>);</div><div class="line"></div><div class="line"><span class="keyword">var</span> rs = fs.createReadStream(<span class="string">'sample.txt'</span>);</div><div class="line"><span class="keyword">var</span> ws = fs.createWriteStream(<span class="string">'copied.txt'</span>);</div><div class="line"></div><div class="line">rs.pipe(ws);</div></pre></td></tr></table></figure>
+</li>
+</ol>
+</li>
+<li><p>Http网络模块</p>
+<ol>
+<li><p>接受网络请求</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="comment">// 导入http模块:</span></div><div class="line"><span class="keyword">var</span> http = <span class="built_in">require</span>(<span class="string">'http'</span>);</div><div class="line"></div><div class="line"><span class="comment">// 创建http server，并传入回调函数:</span></div><div class="line"><span class="keyword">var</span> server = http.createServer(<span class="function"><span class="keyword">function</span> (<span class="params">request, response</span>) </span>&#123;</div><div class="line">    <span class="comment">// 回调函数接收request和response对象,</span></div><div class="line">    <span class="comment">// 获得HTTP请求的method和url:</span></div><div class="line">    <span class="built_in">console</span>.log(request.method + <span class="string">': '</span> + request.url);</div><div class="line">    <span class="comment">// 将HTTP响应200写入response, 同时设置Content-Type: text/html:</span></div><div class="line">    response.writeHead(<span class="number">200</span>, &#123;<span class="string">'Content-Type'</span>: <span class="string">'text/html'</span>&#125;);</div><div class="line">    <span class="comment">// 将HTTP响应的HTML内容写入response:</span></div><div class="line">    response.end(<span class="string">'&lt;h1&gt;Hello world!&lt;/h1&gt;'</span>);</div><div class="line">&#125;);</div><div class="line"></div><div class="line"><span class="comment">// 让服务器监听8080端口:</span></div><div class="line">server.listen(<span class="number">8080</span>);</div><div class="line"></div><div class="line"><span class="built_in">console</span>.log(<span class="string">'Server is running at http://127.0.0.1:8080/'</span>);</div></pre></td></tr></table></figure>
+<p>​</p>
+</li>
 </ol>
 <p>​</p>
 </li>
@@ -1463,6 +1643,152 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/10/前端框架/JQuery/JQuery的Ajax/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="帅到没朋友">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/07/10/前端框架/JQuery/JQuery的Ajax/" itemprop="url">JQuery的ajax</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-10T20:10:33+08:00">
+                2017-07-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/jquery/" itemprop="url" rel="index">
+                    <span itemprop="name">jquery</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="JQuery的ajax"><a href="#JQuery的ajax" class="headerlink" title="JQuery的ajax"></a>JQuery的ajax</h2><p>[TOC]</p>
+<ul>
+<li><p>jQuery在全局对象<code>jQuery</code>（也就是<code>$</code>）绑定了<code>ajax()</code>函数，可以处理AJAX请求。<code>ajax(url, settings)</code>函数需要接收一个URL和一个可选的<code>settings</code>对象，</p>
+</li>
+<li><p>Get请求</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> jqxhr = $.get(<span class="string">'/path/to/resource'</span>, &#123;</div><div class="line">    <span class="attr">name</span>: <span class="string">'Bob Lee'</span>,</div><div class="line">    <span class="attr">check</span>: <span class="number">1</span></div><div class="line">&#125;);</div><div class="line"><span class="comment">//第二个参数代表了请求参数,直接被加到请求url后面</span></div></pre></td></tr></table></figure>
+</li>
+<li><p>POST请求（传入的第二个参数默认被序列化为<code>application/x-www-form-urlencoded</code>：）</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> jqxhr = $.post(<span class="string">'/path/to/resource'</span>, &#123;</div><div class="line">    <span class="attr">name</span>: <span class="string">'Bob Lee'</span>,</div><div class="line">    <span class="attr">check</span>: <span class="number">1</span></div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">* 直接获取json获取</div><div class="line"></div><div class="line">  ```javascript</div><div class="line">  var jqxhr = $.getJSON(&apos;/path/to/resource&apos;, &#123;</div><div class="line">      name: &apos;Bob Lee&apos;,</div><div class="line">      check: 1</div><div class="line">  &#125;).done(function (data) &#123;</div><div class="line">      // data已经被解析为JSON对象了</div><div class="line">  &#125;).fail(function (xhr, status) &#123;</div><div class="line">      ajaxLog(&apos;失败: &apos; + xhr.status + &apos;, 原因: &apos; + status);</div><div class="line">  &#125;).always(function () &#123;</div><div class="line">      ajaxLog(&apos;请求完成: 无论成功或失败都会调用&apos;);</div><div class="line">  &#125;);;</div></pre></td></tr></table></figure>
+<p>​</p>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/10/前端框架/JavaScript学习/JavaScript的浏览器对象/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1695,369 +2021,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/10/前端框架/JQuery/JQuery的Ajax/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="forever_zs">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/head.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="帅到没朋友">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/07/10/前端框架/JQuery/JQuery的Ajax/" itemprop="url">JQuery的ajax</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-10T20:10:33+08:00">
-                2017-07-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/jquery/" itemprop="url" rel="index">
-                    <span itemprop="name">jquery</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="JQuery的ajax"><a href="#JQuery的ajax" class="headerlink" title="JQuery的ajax"></a>JQuery的ajax</h2><p>[TOC]</p>
-<ul>
-<li><p>jQuery在全局对象<code>jQuery</code>（也就是<code>$</code>）绑定了<code>ajax()</code>函数，可以处理AJAX请求。<code>ajax(url, settings)</code>函数需要接收一个URL和一个可选的<code>settings</code>对象，</p>
-</li>
-<li><p>Get请求</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> jqxhr = $.get(<span class="string">'/path/to/resource'</span>, &#123;</div><div class="line">    <span class="attr">name</span>: <span class="string">'Bob Lee'</span>,</div><div class="line">    <span class="attr">check</span>: <span class="number">1</span></div><div class="line">&#125;);</div><div class="line"><span class="comment">//第二个参数代表了请求参数,直接被加到请求url后面</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>POST请求（传入的第二个参数默认被序列化为<code>application/x-www-form-urlencoded</code>：）</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> jqxhr = $.post(<span class="string">'/path/to/resource'</span>, &#123;</div><div class="line">    <span class="attr">name</span>: <span class="string">'Bob Lee'</span>,</div><div class="line">    <span class="attr">check</span>: <span class="number">1</span></div><div class="line">&#125;);</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">* 直接获取json获取</div><div class="line"></div><div class="line">  ```javascript</div><div class="line">  var jqxhr = $.getJSON(&apos;/path/to/resource&apos;, &#123;</div><div class="line">      name: &apos;Bob Lee&apos;,</div><div class="line">      check: 1</div><div class="line">  &#125;).done(function (data) &#123;</div><div class="line">      // data已经被解析为JSON对象了</div><div class="line">  &#125;).fail(function (xhr, status) &#123;</div><div class="line">      ajaxLog(&apos;失败: &apos; + xhr.status + &apos;, 原因: &apos; + status);</div><div class="line">  &#125;).always(function () &#123;</div><div class="line">      ajaxLog(&apos;请求完成: 无论成功或失败都会调用&apos;);</div><div class="line">  &#125;);;</div></pre></td></tr></table></figure>
-<p>​</p>
-</li>
-</ul>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/10/前端框架/JavaScript学习/JavaScript函数/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="forever_zs">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/head.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="帅到没朋友">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/07/10/前端框架/JavaScript学习/JavaScript函数/" itemprop="url">JavaScript的函数</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-10T10:10:33+08:00">
-                2017-07-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/JavaScript/" itemprop="url" rel="index">
-                    <span itemprop="name">JavaScript</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="JavaScript的函数"><a href="#JavaScript的函数" class="headerlink" title="JavaScript的函数"></a>JavaScript的函数</h2><p>[TOC]</p>
-<h4 id="函数的定义"><a href="#函数的定义" class="headerlink" title="函数的定义"></a>函数的定义</h4><ol>
-<li><p>普通函数定义</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">abs</span>(<span class="params">x</span>) </span>&#123;</div><div class="line">    <span class="keyword">if</span> (x &gt;= <span class="number">0</span>) &#123;</div><div class="line">        <span class="keyword">return</span> x;</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">return</span> -x;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-</li>
-<li><p>指定变量的函数定义</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> abs = <span class="function"><span class="keyword">function</span> (<span class="params">x</span>) </span>&#123;</div><div class="line">    <span class="keyword">if</span> (x &gt;= <span class="number">0</span>) &#123;</div><div class="line">        <span class="keyword">return</span> x;</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">return</span> -x;</div><div class="line">    &#125;</div><div class="line">&#125;;     <span class="comment">//此种方法末尾需要添加;</span></div></pre></td></tr></table></figure>
-</li>
-</ol>
-<h4 id="Arguments关键字"><a href="#Arguments关键字" class="headerlink" title="Arguments关键字"></a>Arguments关键字</h4><ul>
-<li><p>该关键字只在函数内部齐作用，永远指向当前函数的调用者传入的所有参数。arguments类似Array但它不是一个Array。<strong>利用arguments，你可以获得调用者传入的所有参数。也就是说，即使函数不定义任何参数，还是可以拿到参数的值以及参数的数量</strong></p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params">x</span>) </span>&#123;</div><div class="line">    alert(x); <span class="comment">// 10</span></div><div class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i=<span class="number">0</span>; i&lt;<span class="built_in">arguments</span>.length; i++) &#123;</div><div class="line">        alert(<span class="built_in">arguments</span>[i]); <span class="comment">// 10, 20, 30</span></div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line">foo(<span class="number">10</span>, <span class="number">20</span>, <span class="number">30</span>);</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h4 id="Rest参数"><a href="#Rest参数" class="headerlink" title="Rest参数"></a>Rest参数</h4><ul>
-<li><p>在ES6中定义了一种方便获取可变参数的方式。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params">a, b, ...rest</span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'a = '</span> + a);</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'b = '</span> + b);</div><div class="line">    <span class="built_in">console</span>.log(rest);</div><div class="line">&#125;</div><div class="line"></div><div class="line">foo(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>);</div><div class="line"><span class="comment">// 结果:</span></div><div class="line"><span class="comment">// a = 1</span></div><div class="line"><span class="comment">// b = 2</span></div><div class="line"><span class="comment">// Array [ 3, 4, 5 ]</span></div></pre></td></tr></table></figure>
-<ul>
-<li>rest参数只能写在最后，前面用…标识，从运行结果可知，传入的参数先绑定a、b，多余的参数以数组形式交给变量rest，所以，不再需要arguments我们就获取了全部参数。</li>
-<li>如果传入的参数连正常定义的参数都没填满，也不要紧，rest参数会接收一个空数组（注意不是undefined）。</li>
-</ul>
-</li>
-</ul>
-<h4 id="变量-的作用域"><a href="#变量-的作用域" class="headerlink" title="变量 的作用域"></a>变量 的作用域</h4><ul>
-<li><p>在JavaScript中，用<code>var</code>申明的变量实际上是有作用域的。（该作用域只包括函数，不包括快作用域）</p>
-<p>只有在作用域内部才可以使用。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="meta">'use strict'</span>;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"></span>) </span>&#123;</div><div class="line">  	<span class="keyword">var</span> temp =<span class="number">100</span>;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> i=<span class="number">0</span>; i&lt;<span class="number">100</span>; i++) &#123;</div><div class="line">        <span class="comment">//</span></div><div class="line">    &#125;</div><div class="line">    i += <span class="number">100</span>; <span class="comment">// 仍然可以引用变量i,因为var的局部只局限于函数内部。</span></div><div class="line">&#125;</div><div class="line"></div><div class="line">temp=temp+<span class="number">2</span>;  <span class="comment">// ReferenceError! 无法在函数体外引用变量x</span></div></pre></td></tr></table></figure>
-<p>在es6之后，要想在块级作用域定义局部变量可以使用let关键字。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"></span>) </span>&#123;</div><div class="line">  	<span class="keyword">var</span> temp =<span class="number">100</span>;</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i=<span class="number">0</span>; i&lt;<span class="number">100</span>; i++) &#123;</div><div class="line">        <span class="comment">//</span></div><div class="line">    &#125;</div><div class="line">    i += <span class="number">100</span>;  <span class="comment">// SyntaxError</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>并且在es6之后，可以通过const关键字定义常量</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> PI = <span class="number">3.14</span>;</div><div class="line">PI = <span class="number">3</span>; <span class="comment">// 某些浏览器不报错，但是无效果！</span></div><div class="line">PI; <span class="comment">// 3.14</span></div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h4 id="装饰器"><a href="#装饰器" class="headerlink" title="装饰器"></a>装饰器</h4><ul>
-<li><p>通过js的装饰起可以动态改变函数的行为，增加我们需要的功能。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> count = <span class="number">0</span>;</div><div class="line"><span class="keyword">var</span> oldParseInt = <span class="built_in">parseInt</span>; <span class="comment">// 保存原函数</span></div><div class="line"></div><div class="line"><span class="built_in">window</span>.parseInt = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">    count += <span class="number">1</span>;</div><div class="line">    <span class="keyword">return</span> oldParseInt.apply(<span class="literal">null</span>, <span class="built_in">arguments</span>); <span class="comment">// 调用原函数</span></div><div class="line">&#125;;</div><div class="line"></div><div class="line"><span class="comment">// 测试:</span></div><div class="line"><span class="built_in">parseInt</span>(<span class="string">'10'</span>);</div><div class="line"><span class="built_in">parseInt</span>(<span class="string">'20'</span>);</div><div class="line"><span class="built_in">parseInt</span>(<span class="string">'30'</span>);</div><div class="line">count; <span class="comment">// 3</span></div></pre></td></tr></table></figure>
-<p>这样我们每次调用parseInt（）的时候都可以计数一次。</p>
-</li>
-</ul>
-<h4 id="高阶函数"><a href="#高阶函数" class="headerlink" title="高阶函数"></a>高阶函数</h4><ul>
-<li><p>神马叫高阶函数？</p>
-<p><strong>JavaScript的函数其实都指向某个变量。既然变量可以指向函数，函数的参数能接收变量，那么一个函数就可以接收另一个函数作为参数，这种函数就称之为高阶函数。</strong></p>
-</li>
-<li><p>Map函数</p>
-<p>由于<code>map()</code>方法定义在JavaScript的<code>Array</code>中，我们调用<code>Array</code>的<code>map()</code>方法，传入我们自己的函数，就得到了一个新的<code>Array</code>作为结果。相当于对Array中的每个值都进行一次我们指定的函数操作。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">pow</span>(<span class="params">x</span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> x * x;</div><div class="line">&#125;</div><div class="line"><span class="keyword">var</span> arr = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>];</div><div class="line">arr.map(pow); <span class="comment">// [1, 4, 9, 16, 25, 36, 49, 64, 81]</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>Reduce函数</p>
-<p>Array的reduce()把一个函数作用在这个Array的[x1, x2, x3…]上，这个函数必须接收两个参数，reduce()把结果继续和序列的下一个元素做累积计算，其效果就是：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> arr = [<span class="number">1</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">7</span>, <span class="number">9</span>];</div><div class="line">arr.reduce(<span class="function"><span class="keyword">function</span> (<span class="params">x, y</span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> x + y;</div><div class="line">&#125;); <span class="comment">// 将array中的数据进行了累加操作</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>Filter函数</p>
-<p>通过Filter我们可以过滤我们需要的数组元素。和<code>map()</code>类似，<code>Array</code>的<code>filter()</code>也接收一个函数。和<code>map()</code>不同的是，<code>filter()</code>把传入的函数依次作用于每个元素，然后根据返回值是<code>true</code>还是<code>false</code>决定保留还是丢弃该元素。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> arr = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">9</span>, <span class="number">10</span>, <span class="number">15</span>];</div><div class="line"><span class="keyword">var</span> r = arr.filter(<span class="function"><span class="keyword">function</span> (<span class="params">x</span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> x % <span class="number">2</span> !== <span class="number">0</span>;</div><div class="line">&#125;);</div><div class="line">r; <span class="comment">// 删除数组中的偶数，返回结果为[1, 5, 9, 15]</span></div></pre></td></tr></table></figure>
-<p>去除数组中的重复元素：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">r = arr.filter(<span class="function"><span class="keyword">function</span> (<span class="params">element, index, self</span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> self.indexOf(element) === index;</div><div class="line">&#125;);</div><div class="line"><span class="comment">//这里的回调函数第一个参数代表数组中的某个元素，第二个代表下标，第三个代表数组本身。</span></div><div class="line"><span class="comment">//去除重复元素依靠的是indexOf总是返回第一个元素的位置，后续的重复元素位置与indexOf返回的位置不相等，因此被filter滤掉了。</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>排序函数</p>
-<p>常规定，对于两个元素<code>x</code>和<code>y</code>，如果认为<code>x &lt; y</code>，则返回<code>-1</code>，如果认为<code>x == y</code>，则返回<code>0</code>，如果认为<code>x &gt; y</code>，则返回<code>1</code>。</p>
-<p>所以自定义排序函数（sort会直接对数组内容进行修改）：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">var arr = [<span class="number">10</span>, <span class="number">20</span>, <span class="number">1</span>, <span class="number">2</span>];</div><div class="line">arr.sort(function (x, y) &#123;</div><div class="line">    <span class="keyword">if</span> (x &lt; y) &#123;</div><div class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">if</span> (x &gt; y) &#123;</div><div class="line">        <span class="keyword">return</span> <span class="number">1</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;); <span class="comment">// [1, 2, 10, 20]</span></div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h4 id="函数的闭包"><a href="#函数的闭包" class="headerlink" title="函数的闭包"></a>函数的闭包</h4><ul>
-<li><p>高阶函数除了可以接受函数作为参数外，还可以把函数作为结果值返回。</p>
-<p>举个栗子：正常的求和函数</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">sum</span>(<span class="params">arr</span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> arr.reduce(<span class="function"><span class="keyword">function</span> (<span class="params">x, y</span>) </span>&#123;</div><div class="line">        <span class="keyword">return</span> x + y;</div><div class="line">    &#125;);</div><div class="line">&#125;</div><div class="line">sum([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]); <span class="comment">// 15</span></div></pre></td></tr></table></figure>
-<p>使用闭包的求和函数：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">lazy_sum</span>(<span class="params">arr</span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> sum = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">        <span class="keyword">return</span> arr.reduce(<span class="function"><span class="keyword">function</span> (<span class="params">x, y</span>) </span>&#123;</div><div class="line">            <span class="keyword">return</span> x + y;</div><div class="line">        &#125;);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> sum;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">var</span> f1 = lazy_sum([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]); <span class="comment">// function sum()这里并不会立即执行函数</span></div><div class="line">f1(); <span class="comment">// 15    调用函数的时候才会真正的执行计算。</span></div><div class="line"><span class="keyword">var</span> f2 = lazy_sum([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]);</div><div class="line">f1 === f2; <span class="comment">// false每次返回的都是不同的函数。</span></div></pre></td></tr></table></figure>
-<p>我们在函数<code>lazy_sum</code>中又定义了函数<code>sum</code>，并且，内部函数<code>sum</code>可以引用外部函数<code>lazy_sum</code>的参数和局部变量，当<code>lazy_sum</code>返回函数<code>sum</code>时，相关参数和变量都保存在返回的函数中，这种称为闭包（Closure）。</p>
-<p>匿名函数会有这种功能其主要原因<strong>是因为我们创建的匿名函数并没有执行</strong>，如果想要创建匿名函数并执行，可以使用以下语法：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">(<span class="function"><span class="keyword">function</span> (<span class="params">x</span>) </span>&#123; <span class="keyword">return</span> x * x &#125;) (<span class="number">3</span>);</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<h4 id="箭头函数"><a href="#箭头函数" class="headerlink" title="箭头函数"></a>箭头函数</h4><ul>
-<li><p>在ES6中新增了一种匿名函数标准，可以使用箭头语法。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">x =&gt; x * x</div><div class="line"><span class="comment">//作用相当于</span></div><div class="line"><span class="function"><span class="keyword">function</span> (<span class="params">x</span>) </span>&#123;</div><div class="line">    <span class="keyword">return</span> x * x;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>如果包涵多个表示式：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">x =&gt; &#123;</div><div class="line">    <span class="keyword">if</span> (x &gt; <span class="number">0</span>) &#123;</div><div class="line">        <span class="keyword">return</span> x * x;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">return</span> - x * x;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>包涵多个参数：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 两个参数:</span></div><div class="line">(x, y) =&gt; x * x + y * y</div><div class="line"></div><div class="line"><span class="comment">// 无参数:</span></div><div class="line">() =&gt; <span class="number">3.14</span></div><div class="line"></div><div class="line"><span class="comment">// 可变参数:</span></div><div class="line">(x, y, ...rest) =&gt; &#123;</div><div class="line">    <span class="keyword">var</span> i, sum = x + y;</div><div class="line">    <span class="keyword">for</span> (i=<span class="number">0</span>; i&lt;rest.length; i++) &#123;</div><div class="line">        sum += rest[i];</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> sum;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>​</p>
-</li>
-</ul>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -2107,7 +2070,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">24</span>
+                <span class="site-state-item-count">25</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -2118,7 +2081,7 @@
             
             <div class="site-state-item site-state-categories">
               
-                <span class="site-state-item-count">13</span>
+                <span class="site-state-item-count">14</span>
                 <span class="site-state-item-name">分类</span>
               
             </div>
@@ -2129,7 +2092,7 @@
             
             <div class="site-state-item site-state-tags">
               
-                <span class="site-state-item-count">37</span>
+                <span class="site-state-item-count">38</span>
                 <span class="site-state-item-name">标签</span>
               
             </div>
