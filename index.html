@@ -271,6 +271,185 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/09/18/程序员筑基之路/如何写好一个单例/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="forever_zs">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="窗边的扁豆">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2017/09/18/程序员筑基之路/如何写好一个单例/" itemprop="url">如何写好一个单例</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-18T20:10:33+08:00">
+                2017-09-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/程序员筑基之路/" itemprop="url" rel="index">
+                    <span itemprop="name">程序员筑基之路</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="如何写好一个单例"><a href="#如何写好一个单例" class="headerlink" title="如何写好一个单例"></a>如何写好一个单例</h2><p>[TOC]</p>
+<h4 id="什么是单例模式？"><a href="#什么是单例模式？" class="headerlink" title="什么是单例模式？"></a>什么是单例模式？</h4><ul>
+<li>如果你听说过设计模式，那么肯定知道单例模式，因为单例模式是设计模式中最简单的一种。顾名思义：单例模式就是一个类只有一个实例变量的一种设计模式，通过使用单例模式，可以节约系统的资源开销，避免共享资源的多重占用等优点。</li>
+<li>什么时候会用：<ol>
+<li>对于那种经常实例化但是过一会儿就被销毁的对象适合使用单例模式。</li>
+<li>对于创建对象需要消耗很多资源的对象。如：数据库连接池对象，线程池对象等</li>
+<li>只需要一个对象保证全局的一致性的。如：Android中Application对象，网站的计数器等。</li>
+</ol>
+</li>
+</ul>
+<h4 id="实现一个单例模式"><a href="#实现一个单例模式" class="headerlink" title="实现一个单例模式"></a>实现一个单例模式</h4><ul>
+<li><p>如果你是一位对设计模式略有接触的新手，一定会毫不费力的就写出了以下单例代码（懒汉式单例：等到需要时再实例化）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Created by forever on 2017/9/20.</div><div class="line"> */</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> Singleton singleton;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;</div><div class="line"></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (singleton == <span class="keyword">null</span>) &#123;</div><div class="line">            singleton = <span class="keyword">new</span> Singleton();</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> singleton;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>其实上面的代码就已经涵盖了单例模式最重要的三个要素：</p>
+<ol>
+<li>将构造方法私有化（保证外部不能直接构造）。</li>
+<li>有一个静态属性指向实例</li>
+<li>提供一个公有的静态方法向外面提供这个实例。</li>
+</ol>
+</li>
+<li><p>然而表面看似完美的代码，内部其实暗藏杀鸡：</p>
+<p><img src="http://img.blog.csdn.net/20170920101232282?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+<p>在单线程中看似是没有什么问题的，但如果放在多线程的环境中就会有问题了。加入有两个线程同时访问<code>getInstance</code>方法，如果期中一个线程刚进入<code>if (singleton == null){}</code>里面，这个时候另一个线程恰好也访问这个方法，并且完成创建了一个实例，那个刚刚挂起的那个线程继续运行的话就会再创建一个实例。那我们单例的理想不就破灭的了嘛。</p>
+<p><img src="http://img.blog.csdn.net/20170920102610520?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhhb3NodWFpd2pt/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+</li>
+</ul>
+<h4 id="基本方法的改进"><a href="#基本方法的改进" class="headerlink" title="基本方法的改进"></a>基本方法的改进</h4><ul>
+<li><p>既然了解了问题，那么我们如何才能防止两个线程同时实例化方法呢？有经验的同学或许就会立刻想到了Java的同步。通过<code>synchronized</code>关键字进行加锁。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (singleton == <span class="keyword">null</span>) &#123;</div><div class="line">            singleton = <span class="keyword">new</span> Singleton();</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> singleton;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+</li>
+<li><p>不过加锁的话对程序的性能性能会有很大影响，如果当某个线程正在访问该方法的时候其他线程就只能在锁池中等待该线程释放锁，我们稍加改进一下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (singleton == <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">synchronized</span> (Singleton.class)&#123;</div><div class="line">                <span class="keyword">if</span>(singleton == <span class="keyword">null</span>)&#123;</div><div class="line">                    singleton = <span class="keyword">new</span> Singleton();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> singleton;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>这样只在构造实例代码的时候加锁，对程序的性能影响就小多了。而且只要实例化完成之后，后面基本就不会进入这个同步代码块了。</p>
+</li>
+<li><p>看似已经很完美了，那么我们有什么其他办法不用加锁的方式也能避免多线程的问题呢？ok，当然有的，我们可以使用饿汉式的单例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Created by forever on 2017/9/20.</div><div class="line"> */</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</div><div class="line">    <span class="keyword">public</span> Singleton singleton = <span class="keyword">new</span> Singleton();</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> singleton;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>上面代码与懒汉式加载最大的区别在于这里的single在开始就实例化了，也就是不管我们是否使用它，都会将其加载到内存中去。这个在获取的时候就直接返回就行了。如果不在意内存的话最好使用这个方法。</p>
+</li>
+<li><p>如果你说，我既不想要使用同步，但又十分在意内存资源怎么办，ok，说明你是一个很有追求的人，其实在也是有办法的（办法总比问题多）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span></span>&#123;</div><div class="line"></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span></span>&#123;</div><div class="line">        <span class="keyword">return</span> Nested.singleton;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Nested</span></span>&#123;</div><div class="line">        <span class="keyword">static</span> &#123;</div><div class="line">            System.out.println(<span class="string">"蛤蛤"</span>);</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">private</span> <span class="keyword">static</span> Singleton singleton = <span class="keyword">new</span> Singleton();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个时候我们就需要一个内部类作为桥梁了，当我们<code>getInstance()</code>时，类加载器才会去加载<code>Nested</code>，然后实例化Singleton的实例，如果你对Java的类加载机制有了解的话一定很容易就理解了上述代码。</p>
+</li>
+</ul>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><ul>
+<li>Java的单例模式看似简单，其实深究而言还是有很多值得深究的东西的，如果在面试的碰到了也可以和面试官多吹一会儿。最近一直在准备校招，作为菜鸟表示压力山大，也祝愿大家都能找到满意的工作。如果发现写的有什么问题欢迎指正，希望与大家共同进步。</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/09/06/数据结构与算法/经典算法——动态规划入门实例/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2168,184 +2347,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/18/数据库/mysql/MySql的索引/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="forever_zs">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/head.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="窗边的扁豆">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2017/07/18/数据库/mysql/MySql的索引/" itemprop="url">MySql索引</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-18T00:00:00+08:00">
-                2017-07-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/MySql/" itemprop="url" rel="index">
-                    <span itemprop="name">MySql</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="MySql索引"><a href="#MySql索引" class="headerlink" title="MySql索引"></a>MySql索引</h2><p>[TOC]</p>
-<h4 id="神马是MySql索引"><a href="#神马是MySql索引" class="headerlink" title="神马是MySql索引"></a>神马是MySql索引</h4><p>​    数据库索引是一种数据结构，目的是提高表的操作速度。要创建的索引，应当认为哪列将用于使SQL查询，创<strong>建对这些列的一个或多个索引。</strong>实际上，索引也是表，其中保存主键或索引字段的指针并指向每个记录到实际的表的类型。</p>
-<p>​    索引一方面可以提高数据的检索速度，不过另一方面过多的索引会降低表的gen更新速度，（因为在更新表的同时也会更新索引。）</p>
-<h4 id="索引的基本用法"><a href="#索引的基本用法" class="headerlink" title="索引的基本用法"></a>索引的基本用法</h4><ol>
-<li><p>创建与修改普通索引</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">INDEX</span> indexName <span class="keyword">ON</span> mytable(username(<span class="keyword">length</span>)); </div><div class="line">//创建表的时候直接指定</div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> mytable(  </div><div class="line"><span class="keyword">ID</span> <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>,   </div><div class="line">username <span class="built_in">VARCHAR</span>(<span class="number">16</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span>,  </div><div class="line"><span class="keyword">INDEX</span> [indexName] (username(<span class="keyword">length</span>))  </div><div class="line">);  </div><div class="line">//修改索引</div><div class="line"><span class="keyword">ALTER</span> mytable <span class="keyword">ADD</span> <span class="keyword">INDEX</span> [indexName] <span class="keyword">ON</span> (username(<span class="keyword">length</span>)) </div><div class="line">//删除索引</div><div class="line"><span class="keyword">DROP</span> <span class="keyword">INDEX</span> [indexName] <span class="keyword">ON</span> mytable;</div></pre></td></tr></table></figure>
-</li>
-<li><p>创建与修改复合索引</p>
-<p>复合索引是在多个字段上创建的索引。<strong>复合索引遵守“最左前缀”原则，即在查询条件中使用了复合索引的第一个字段，索引才会被使用。</strong>因此，在复合索引中索引列的顺序至关重要。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">create</span> <span class="keyword">index</span> index_name <span class="keyword">on</span> tbl_name(index_col_name,...);</div><div class="line">//修改索引</div><div class="line"><span class="keyword">alter</span> <span class="keyword">table</span> tbl_name <span class="keyword">add</span> <span class="keyword">index</span> index_name <span class="keyword">on</span> (index_col_name,...);</div></pre></td></tr></table></figure>
-</li>
-<li><p>创建与修改唯一索引</p>
-<p>唯一索引列的值必须唯一，但允许有空值。如果是组合索引，则列值的组合必须唯一。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">UNIQUE</span> <span class="keyword">INDEX</span> indexName <span class="keyword">ON</span> mytable(username(<span class="keyword">length</span>)) </div><div class="line">//创建表的时候直接指定</div><div class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> mytable(  </div><div class="line"><span class="keyword">ID</span> <span class="built_in">INT</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>,   </div><div class="line">username <span class="built_in">VARCHAR</span>(<span class="number">16</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span>,  </div><div class="line"><span class="keyword">UNIQUE</span> [indexName] (username(<span class="keyword">length</span>))  </div><div class="line">);  </div><div class="line">//修改索引</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">table</span> mytable <span class="keyword">ADD</span> <span class="keyword">UNIQUE</span> [indexName] (username(<span class="keyword">length</span>))</div></pre></td></tr></table></figure>
-</li>
-<li><p>创建与修改主键索引</p>
-<p>主键索引值必须是唯一的，且不能为NULL。（默认创建主键都会为该列创建索引）</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> tbl_name <span class="keyword">ADD</span> PRIMARY <span class="keyword">KEY</span> (column_list)</div><div class="line">//删除索引</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> testalter_tbl <span class="keyword">DROP</span> PRIMARY <span class="keyword">KEY</span>;</div></pre></td></tr></table></figure>
-</li>
-<li><p>创建与修改全文索引</p>
-<p>它能够利用「分词技术「等多种算法智能分析出文本文字中关键字词的频率及重要性，然后按照一定的算法规则智能地筛选出我们想要的搜索结果。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> article (</div><div class="line">    <span class="keyword">id</span> <span class="built_in">INT</span> <span class="keyword">UNSIGNED</span> AUTO_INCREMENT <span class="keyword">NOT</span> <span class="literal">NULL</span> PRIMARY <span class="keyword">KEY</span>,</div><div class="line">    title <span class="built_in">VARCHAR</span>(<span class="number">200</span>),</div><div class="line">    <span class="keyword">content</span> <span class="built_in">TEXT</span>,</div><div class="line">    FULLTEXT (title, <span class="keyword">content</span>) <span class="comment">--在title和content列上创建全文索引</span></div><div class="line">);</div><div class="line">//修改索引</div><div class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> article <span class="keyword">ADD</span> FULLTEXT <span class="keyword">INDEX</span> fulltext_article (title, <span class="keyword">content</span>)</div></pre></td></tr></table></figure>
-<p>如何使用全文索引</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">//在article表的title和content列中全文检索指定的查询字符串</div><div class="line"><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> article <span class="keyword">WHERE</span> <span class="keyword">MATCH</span>(title, <span class="keyword">content</span>) AGAINST(<span class="string">'查询字符串'</span>)</div></pre></td></tr></table></figure>
-<p>MySQL自带的全文索引只能对英文进行全文检索，目前无法对中文进行全文检索。如果需要对包含中文在内的文本数据进行全文检索，我们需要采用Sphinx(斯芬克斯)/Coreseek技术来处理中文。</p>
-</li>
-</ol>
-<h4 id="使用索引的注意事项"><a href="#使用索引的注意事项" class="headerlink" title="使用索引的注意事项"></a>使用索引的注意事项</h4><ul>
-<li><p>不要在列上进行运算或者函数</p>
-<p>在索引列上进行运算或使用函数会导致索引失效</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">user</span> <span class="keyword">where</span> <span class="keyword">YEAR</span>(birthday)&lt;<span class="number">1990</span> <span class="keyword">and</span> code=<span class="string">""</span>&gt;</div></pre></td></tr></table></figure>
-</li>
-<li><p>不要为多个列创建索引</p>
-<p>为多个列创建独立的索引，大部分并不能提高MySQL的查询性能。因为执行查询时，MySQL只能使用一个索引，会从多个索引中选择一个限制最为严格的索引。</p>
-</li>
-<li><p>索引不会包含有NULL值的列</p>
-<p>只要列中包含有NULL值都将不会被包含在索引中，复合索引中只要有一列含有NULL值，那么这一列对于此复合索引就是无效的。所以我们在数据库设计时不要让字段的默认值为NULL。</p>
-</li>
-<li><p>范围查询对多列查询的影响</p>
-<p>如果查询中的某个列有范围查询，则其右边所有列都无法使用索引优化查找。</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">where age&gt;10 and age&lt;90 and name="lianggzone" &gt;</div></pre></td></tr></table></figure>
-<p>这是因为age是范围查询，导致多列索引t_index(age,name)，无法用到name索引。</p>
-<p>​</p>
-</li>
-</ul>
-
-          
-        
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <div>
-      
-    </div>
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-
-
-    
   </section>
 
   
@@ -2395,7 +2396,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">25</span>
+                <span class="site-state-item-count">26</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -2406,7 +2407,7 @@
             
             <div class="site-state-item site-state-categories">
               
-                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-count">15</span>
                 <span class="site-state-item-name">分类</span>
               
             </div>
@@ -2417,7 +2418,7 @@
             
             <div class="site-state-item site-state-tags">
               
-                <span class="site-state-item-count">38</span>
+                <span class="site-state-item-count">39</span>
                 <span class="site-state-item-name">标签</span>
               
             </div>
